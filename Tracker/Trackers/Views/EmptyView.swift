@@ -7,8 +7,9 @@ final class EmptyView: UIStackView {
     init(title: String, imageName: String) {
         super.init(frame: .zero)
         imageView.image = UIImage(named: imageName)
-        label.text = "Что будем отслеживать?"
+        label.text = title
         label.font = .ypMedium12
+        label.textAlignment = .center
         addArrangedSubview(imageView)
         addArrangedSubview(label)
         axis = .vertical
@@ -19,5 +20,4 @@ final class EmptyView: UIStackView {
     required init(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-
 }
