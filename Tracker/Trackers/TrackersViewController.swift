@@ -12,6 +12,18 @@ final class TrackersViewController: UIViewController {
         collectionViewLayout: UICollectionViewFlowLayout()
     )
 
+    private lazy var datePicker: UIDatePicker = {
+        let picker = UIDatePicker()
+        picker.datePickerMode = .date
+        picker.preferredDatePickerStyle = .compact
+        picker.addTarget(
+            self,
+            action: #selector(onDatePickerValueChanged(_:)),
+            for: .valueChanged
+        )
+        return picker
+    }()
+
     private lazy var searchController: UISearchController = {
         let controller = UISearchController(searchResultsController: nil)
         controller.searchResultsUpdater = self
@@ -154,21 +166,11 @@ final class TrackersViewController: UIViewController {
             action: #selector(onTap)
         )
         navigationItem.leftBarButtonItem = addButton
-        let datePicker = UIDatePicker()
-
-        datePicker.datePickerMode = .date
-        datePicker.preferredDatePickerStyle = .compact
         let barButtonItem = UIBarButtonItem(customView: datePicker)
         if #available(iOS 26.0, *) {
             barButtonItem.hidesSharedBackground = true
         }
         navigationItem.rightBarButtonItem = barButtonItem
-
-        datePicker.addTarget(
-            self,
-            action: #selector(onDatePickerValueChanged(_:)),
-            for: .valueChanged
-        )
     }
 
     @objc private func onTap() {
@@ -219,7 +221,45 @@ extension TrackersViewController: AddTrackerViewControllerDelegate {
         }
 
         categories = updated
+        clearSearch()
+        focusDate(for: tracker)
         reloadData()
+    }
+
+    /// Сбрасывает поиск, чтобы созданный трекер не был отфильтрован по запросу.
+    private func clearSearch() {
+        searchQuery = ""
+        if searchController.isActive {
+            searchController.searchBar.text = ""
+        }
+    }
+
+    /// Переводит `currentDate` и датапикер на ближайший день из расписания трекера,
+    /// если на текущей дате он не показывается.
+    private func focusDate(for tracker: Tracker) {
+        guard !tracker.schedule.isEmpty else { return }
+        if let today = WeekDay(date: currentDate),
+            tracker.schedule.contains(today)
+        {
+            return
+        }
+
+        let calendar = Calendar.current
+        for offset in 1...WeekDay.allCases.count {
+            guard
+                let candidate = calendar.date(
+                    byAdding: .day,
+                    value: offset,
+                    to: currentDate
+                ),
+                let day = WeekDay(date: candidate),
+                tracker.schedule.contains(day)
+            else { continue }
+
+            currentDate = candidate
+            datePicker.setDate(candidate, animated: true)
+            return
+        }
     }
 }
 
