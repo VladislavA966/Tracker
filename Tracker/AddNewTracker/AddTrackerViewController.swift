@@ -14,6 +14,20 @@ final class AddTrackerViewController: UIViewController {
         case schedule = "Расписание"
     }
 
+    let emojis = [
+        "🍇", "🍈", "🍉", "🍊", "🍋", "🍌", "🍍", "🥭", "🍎", "🍏", "🍐", "🍒", "🍓", "🫐",
+        "🥝", "🍅", "🫒",
+    ]
+
+    let colors: [UIColor] = [
+        .colorSelection1, .colorSelection2, .colorSelection3,
+        .colorSelection4, .colorSelection5, .colorSelection6,
+        .colorSelection7, .colorSelection8, .colorSelection9,
+        .colorSelection10, .colorSelection11, .colorSelection12,
+        .colorSelection13, .colorSelection14, .colorSelection15,
+        .colorSelection16, .colorSelection17, .colorSelection18,
+    ]
+
     let contentView = AddHabitContentView()
     let scheduleVC = ScheduleViewController()
     var trackerDraft = TrackerDraft()
@@ -28,14 +42,41 @@ final class AddTrackerViewController: UIViewController {
         setUpButtons()
         setUpKeyboardDismiss()
         setUpConstraints()
+        setUpEmojisCollectionView()
+        setUpColorsCollectionView()
         renderDraftState()
     }
 
     // MARK: - Setup
+    private func setUpEmojisCollectionView() {
+        contentView.emojisCollectionView.dataSource = self
+        contentView.emojisCollectionView.delegate = self
+        contentView.emojisCollectionView.isScrollEnabled = false
+        contentView.emojisCollectionView.register(
+            EmojiCell.self,
+            forCellWithReuseIdentifier: EmojiCell.reuseIdentifier
+        )
+    }
+
+    private func setUpColorsCollectionView() {
+        contentView.colorsCollectionView.dataSource = self
+        contentView.colorsCollectionView.delegate = self
+        contentView.colorsCollectionView.isScrollEnabled = false
+        contentView.colorsCollectionView.register(
+            ColorCell.self,
+            forCellWithReuseIdentifier: ColorCell.reuseIdentifier
+        )
+    }
 
     private func setUpContentView() {
         contentView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(contentView)
+        NSLayoutConstraint.activate([
+            contentView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            contentView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            contentView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            contentView.topAnchor.constraint(equalTo: view.topAnchor),
+        ])
     }
 
     private func setUpTextField() {
@@ -104,8 +145,13 @@ final class AddTrackerViewController: UIViewController {
     // MARK: - State
 
     func renderDraftState() {
-        contentView.errorLabel.isHidden =
-            trackerDraft.isNameValid || trackerDraft.trackerName.isEmpty
+        let hasError =
+            !trackerDraft.isNameValid && !trackerDraft.trackerName.isEmpty
+        contentView.errorLabel.isHidden = !hasError
+        contentView.contentStack.setCustomSpacing(
+            hasError ? 24 : 8,
+            after: contentView.errorLabel
+        )
         contentView.buttonsRow.createButton.isEnabled = trackerDraft.canCreate
         contentView.buttonsRow.createButton.backgroundColor =
             trackerDraft.canCreate ? .black : .ypGray
@@ -137,14 +183,16 @@ final class AddTrackerViewController: UIViewController {
 
     @objc private func createButtonTapped() {
         guard trackerDraft.canCreate,
-            let categoryTitle = trackerDraft.category
+            let categoryTitle = trackerDraft.category,
+            let emoji = trackerDraft.emoji,
+            let color = trackerDraft.color
         else { return }
 
         let tracker = Tracker(
             id: UUID(),
             name: trackerDraft.trackerName,
-            color: .colorSelection5,
-            emoji: "❤️",
+            color: color,
+            emoji: emoji,
             schedule: trackerDraft.schedule
         )
         delegate?.addTrackerViewController(

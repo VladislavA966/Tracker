@@ -1,9 +1,9 @@
 import UIKit
 
 final class TrackersViewController: UIViewController {
-    var categories: [TrackerCategory] = []
+    private let trackerStore = TrackerStore()
+    private let recordStore = TrackerRecordStore()
     var filteredCategories: [TrackerCategory] = []
-    private var completedTrackers: [TrackerRecord] = []
     private var completedIdsForCurrentDate: Set<UUID> = []
     private var currentDate: Date = Date()
     private var searchQuery: String = ""
@@ -43,28 +43,46 @@ final class TrackersViewController: UIViewController {
         setUpNavigationBar()
         setUpEmptyView()
         setUpCollectionView()
+        setUpStores()
         reloadData()
+    }
+
+    // MARK: - Setup
+
+    private func setUpStores() {
+        trackerStore.delegate = self
+        recordStore.delegate = self
+        trackerStore.start()
+        recordStore.start()
     }
 
     // MARK: - State
 
+    var categories: [TrackerCategory] {
+        trackerStore.categories
+    }
+
     func reloadData() {
         filteredCategories = makeVisibleCategories()
-        completedIdsForCurrentDate = makeCompletedIds(on: currentDate)
+        completedIdsForCurrentDate = recordStore.completedTrackerIds(
+            on: currentDate
+        )
         trackersCollectionView.reloadData()
         updateEmptyState()
     }
 
     private func makeVisibleCategories() -> [TrackerCategory] {
         guard let weekDay = WeekDay(date: currentDate) else { return [] }
-        let query = searchQuery
+        let query =
+            searchQuery
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .lowercased()
 
         return categories.compactMap { category in
             let trackers = category.trackers.filter { tracker in
                 let matchesDay =
-                    tracker.schedule.isEmpty || tracker.schedule.contains(weekDay)
+                    tracker.schedule.isEmpty
+                    || tracker.schedule.contains(weekDay)
                 let matchesQuery =
                     query.isEmpty || tracker.name.lowercased().contains(query)
                 return matchesDay && matchesQuery
@@ -77,21 +95,12 @@ final class TrackersViewController: UIViewController {
         }
     }
 
-    private func makeCompletedIds(on date: Date) -> Set<UUID> {
-        let day = Calendar.current.startOfDay(for: date)
-        return Set(
-            completedTrackers
-                .filter { Calendar.current.isDate($0.completedDate, inSameDayAs: day) }
-                .map { $0.trackerId }
-        )
-    }
-
     func isCompleted(_ trackerId: UUID) -> Bool {
         completedIdsForCurrentDate.contains(trackerId)
     }
 
     func completedDays(for trackerId: UUID) -> Int {
-        completedTrackers.filter { $0.trackerId == trackerId }.count
+        recordStore.completedDays(for: trackerId)
     }
 
     var isCurrentDateInFuture: Bool {
@@ -197,36 +206,18 @@ extension TrackersViewController: AddTrackerViewControllerDelegate {
         didCreate tracker: Tracker,
         categoryTitle: String
     ) {
-        var updated: [TrackerCategory] = []
-        var isCategoryFound = false
-
-        for category in categories {
-            if category.headerTitle == categoryTitle {
-                updated.append(
-                    TrackerCategory(
-                        headerTitle: category.headerTitle,
-                        trackers: category.trackers + [tracker]
-                    )
-                )
-                isCategoryFound = true
-            } else {
-                updated.append(category)
-            }
+        do {
+            try trackerStore.addTracker(tracker, categoryTitle: categoryTitle)
+        } catch {
+            assertionFailure("Не удалось сохранить трекер: \(error)")
+            return
         }
 
-        if !isCategoryFound {
-            updated.append(
-                TrackerCategory(headerTitle: categoryTitle, trackers: [tracker])
-            )
-        }
-
-        categories = updated
         clearSearch()
         focusDate(for: tracker)
         reloadData()
     }
 
-    /// Сбрасывает поиск, чтобы созданный трекер не был отфильтрован по запросу.
     private func clearSearch() {
         searchQuery = ""
         if searchController.isActive {
@@ -234,8 +225,6 @@ extension TrackersViewController: AddTrackerViewControllerDelegate {
         }
     }
 
-    /// Переводит `currentDate` и датапикер на ближайший день из расписания трекера,
-    /// если на текущей дате он не показывается.
     private func focusDate(for tracker: Tracker) {
         guard !tracker.schedule.isEmpty else { return }
         if let today = WeekDay(date: currentDate),
@@ -268,25 +257,33 @@ extension TrackersViewController: AddTrackerViewControllerDelegate {
 extension TrackersViewController: TrackerCellDelegate {
     func trackerCellDidTapPlus(_ cell: TrackerCell) {
         guard !isCurrentDateInFuture,
-              let indexPath = trackersCollectionView.indexPath(for: cell)
+            let indexPath = trackersCollectionView.indexPath(for: cell)
         else { return }
 
-        let tracker = filteredCategories[indexPath.section].trackers[indexPath.item]
-        let day = Calendar.current.startOfDay(for: currentDate)
+        let tracker = filteredCategories[indexPath.section].trackers[
+            indexPath.item
+        ]
 
-        if let index = completedTrackers.firstIndex(where: {
-            $0.trackerId == tracker.id
-                && Calendar.current.isDate($0.completedDate, inSameDayAs: day)
-        }) {
-            completedTrackers.remove(at: index)
-            completedIdsForCurrentDate.remove(tracker.id)
-        } else {
-            completedTrackers.append(
-                TrackerRecord(trackerId: tracker.id, completedDate: day)
-            )
-            completedIdsForCurrentDate.insert(tracker.id)
+        do {
+            try recordStore.toggle(trackerId: tracker.id, on: currentDate)
+        } catch {
+            assertionFailure("Не удалось изменить отметку: \(error)")
         }
+    }
+}
 
-        trackersCollectionView.reloadItems(at: [indexPath])
+// MARK: - TrackerStoreDelegate
+
+extension TrackersViewController: TrackerStoreDelegate {
+    func trackerStoreDidChangeContent(_ store: TrackerStore) {
+        reloadData()
+    }
+}
+
+// MARK: - TrackerRecordStoreDelegate
+
+extension TrackersViewController: TrackerRecordStoreDelegate {
+    func trackerRecordStoreDidChangeContent(_ store: TrackerRecordStore) {
+        reloadData()
     }
 }
