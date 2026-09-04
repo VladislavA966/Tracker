@@ -13,12 +13,18 @@ final class EmojiCell: UICollectionViewCell {
     override init(frame: CGRect) {
         super.init(frame: frame)
         contentView.addSubview(label)
-        label.translatesAutoresizingMaskIntoConstraints = false
         contentView.layer.cornerRadius = 16
+        setUpLabel()
+    }
+
+    private func setUpLabel() {
+        label.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             label.centerXAnchor.constraint(equalTo: centerXAnchor),
             label.centerYAnchor.constraint(equalTo: centerYAnchor),
         ])
+        label.font = .systemFont(ofSize: 32)
+        label.textAlignment = .center
     }
 
     required init?(coder: NSCoder) {

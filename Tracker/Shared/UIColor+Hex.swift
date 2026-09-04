@@ -1,7 +1,6 @@
 import UIKit
 
 extension UIColor {
-    /// Цвет в формате `#RRGGBB` — в таком виде он лежит в базе.
     var hexString: String {
         var red: CGFloat = 0
         var green: CGFloat = 0

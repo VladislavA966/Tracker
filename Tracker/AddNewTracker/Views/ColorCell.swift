@@ -19,6 +19,15 @@ final class ColorCell: UICollectionViewCell {
 
     override init(frame: CGRect) {
         super.init(frame: frame)
+        setupUI()
+
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    private func setupUI() {
         contentView.addSubview(colorView)
         colorView.translatesAutoresizingMaskIntoConstraints = false
         colorView.layer.cornerRadius = 8
@@ -33,14 +42,11 @@ final class ColorCell: UICollectionViewCell {
         ])
     }
 
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
     private func updateBorder() {
         contentView.layer.borderColor =
             isSelected
             ? color?.withAlphaComponent(0.3).cgColor
             : UIColor.clear.cgColor
     }
+
 }

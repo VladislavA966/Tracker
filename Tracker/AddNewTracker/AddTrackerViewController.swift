@@ -35,13 +35,13 @@ final class AddTrackerViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        view.backgroundColor = .whiteDay
         navigationItem.title = "Новая привычка"
         setUpContentView()
         setUpTextField()
         setUpOptionTableView()
         setUpButtons()
         setUpKeyboardDismiss()
-        setUpConstraints()
         setUpEmojisCollectionView()
         setUpColorsCollectionView()
         renderDraftState()
@@ -120,26 +120,6 @@ final class AddTrackerViewController: UIViewController {
         )
         tap.cancelsTouchesInView = false
         view.addGestureRecognizer(tap)
-    }
-
-    private func setUpConstraints() {
-        NSLayoutConstraint.activate([
-            contentView.leadingAnchor.constraint(
-                equalTo: view.leadingAnchor,
-                constant: 16
-            ),
-            contentView.trailingAnchor.constraint(
-                equalTo: view.trailingAnchor,
-                constant: -16
-            ),
-            contentView.topAnchor.constraint(
-                equalTo: view.safeAreaLayoutGuide.topAnchor,
-                constant: 24
-            ),
-            contentView.bottomAnchor.constraint(
-                equalTo: view.safeAreaLayoutGuide.bottomAnchor
-            ),
-        ])
     }
 
     // MARK: - State
