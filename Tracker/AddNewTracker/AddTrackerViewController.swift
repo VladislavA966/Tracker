@@ -81,6 +81,7 @@ final class AddTrackerViewController: UIViewController {
 
     private func setUpTextField() {
         contentView.errorLabel.isHidden = true
+        contentView.errorLabel.font = .ypRegular17
         contentView.textField.returnKeyType = .done
         contentView.textField.delegate = self
         contentView.textField.addTarget(
@@ -129,8 +130,8 @@ final class AddTrackerViewController: UIViewController {
             !trackerDraft.isNameValid && !trackerDraft.trackerName.isEmpty
         contentView.errorLabel.isHidden = !hasError
         contentView.contentStack.setCustomSpacing(
-            hasError ? 24 : 8,
-            after: contentView.errorLabel
+            hasError ? 8 : 24,
+            after: contentView.textField
         )
         contentView.buttonsRow.createButton.isEnabled = trackerDraft.canCreate
         contentView.buttonsRow.createButton.backgroundColor =

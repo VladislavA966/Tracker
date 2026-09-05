@@ -44,8 +44,6 @@ final class AddHabitContentView: UIView {
         contentStack.addArrangedSubview(emojisCollectionView)
         contentStack.addArrangedSubview(colorCollectionHeader)
         contentStack.addArrangedSubview(colorsCollectionView)
-        contentStack.setCustomSpacing(8, after: textField)
-
         [scrollView, buttonsRow].forEach {
             $0.translatesAutoresizingMaskIntoConstraints = false
             addSubview($0)
