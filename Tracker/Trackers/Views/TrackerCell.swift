@@ -41,23 +41,19 @@ final class TrackerCell: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
 
-    func configure(
-        with tracker: Tracker,
-        isCompleted: Bool,
-        completedDays: Int,
-        isPlusEnabled: Bool
-    ) {
+    func configure(with model: TrackerCellModel) {
+        let tracker = model.tracker
         cardView.backgroundColor = tracker.color
         emojiLabel.text = tracker.emoji
         titleLabel.text = tracker.name
-        counterLabel.text = Self.daysTitle(completedDays)
+        counterLabel.text = Self.daysTitle(model.completedDays)
 
         addButton.backgroundColor = tracker.color
-        addButton.alpha = isCompleted ? 0.3 : 1
-        addButton.isEnabled = isPlusEnabled
+        addButton.alpha = model.isCompleted ? 0.3 : 1
+        addButton.isEnabled = model.isPlusEnabled
         addButton.setImage(
             UIImage(
-                systemName: isCompleted ? "checkmark" : "plus",
+                systemName: model.isCompleted ? "checkmark" : "plus",
                 withConfiguration: UIImage.SymbolConfiguration(
                     pointSize: 11,
                     weight: .semibold

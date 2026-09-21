@@ -1,12 +1,9 @@
 import UIKit
 
 final class TrackersViewController: UIViewController {
-    private let trackerStore = TrackerStore()
-    private let recordStore = TrackerRecordStore()
-    var filteredCategories: [TrackerCategory] = []
-    private var completedIdsForCurrentDate: Set<UUID> = []
-    private var currentDate: Date = Date()
-    private var searchQuery: String = ""
+
+    let viewModel: TrackersViewModel
+
     private var trackersCollectionView = UICollectionView(
         frame: .zero,
         collectionViewLayout: UICollectionViewFlowLayout()
@@ -37,85 +34,58 @@ final class TrackersViewController: UIViewController {
         imageName: AppImages.emptyViewImage
     )
 
+    // MARK: - Init
+
+    init(viewModel: TrackersViewModel) {
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    // MARK: - Lifecycle
+
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .whiteDay
         setUpNavigationBar()
         setUpEmptyView()
         setUpCollectionView()
-        setUpStores()
-        reloadData()
+        setUpBindings()
+        viewModel.viewDidLoad()
+    }
+
+    // MARK: - Bindings
+    private func setUpBindings() {
+        viewModel.onCategoriesChange = { [weak self] _ in
+            guard let self else { return }
+            self.trackersCollectionView.reloadData()
+            self.updateEmptyState()
+        }
+
+        viewModel.onDateChange = { [weak self] date in
+            guard let self, self.datePicker.date != date else { return }
+            self.datePicker.setDate(date, animated: true)
+        }
+
+        viewModel.onSearchQueryChange = { [weak self] query in
+            guard let self,
+                self.searchController.searchBar.text != query
+            else { return }
+            self.searchController.searchBar.text = query
+        }
+
+        viewModel.onError = { [weak self] message in
+            self?.showError(message)
+        }
     }
 
     // MARK: - Setup
 
-    private func setUpStores() {
-        trackerStore.delegate = self
-        recordStore.delegate = self
-        trackerStore.start()
-        recordStore.start()
-    }
-
-    // MARK: - State
-
-    var categories: [TrackerCategory] {
-        trackerStore.categories
-    }
-
-    func reloadData() {
-        filteredCategories = makeVisibleCategories()
-        completedIdsForCurrentDate = recordStore.completedTrackerIds(
-            on: currentDate
-        )
-        trackersCollectionView.reloadData()
-        updateEmptyState()
-    }
-
-    private func makeVisibleCategories() -> [TrackerCategory] {
-        guard let weekDay = WeekDay(date: currentDate) else { return [] }
-        let query =
-            searchQuery
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-            .lowercased()
-
-        return categories.compactMap { category in
-            let trackers = category.trackers.filter { tracker in
-                let matchesDay =
-                    tracker.schedule.isEmpty
-                    || tracker.schedule.contains(weekDay)
-                let matchesQuery =
-                    query.isEmpty || tracker.name.lowercased().contains(query)
-                return matchesDay && matchesQuery
-            }
-            guard !trackers.isEmpty else { return nil }
-            return TrackerCategory(
-                headerTitle: category.headerTitle,
-                trackers: trackers
-            )
-        }
-    }
-
-    func isCompleted(_ trackerId: UUID) -> Bool {
-        completedIdsForCurrentDate.contains(trackerId)
-    }
-
-    func completedDays(for trackerId: UUID) -> Int {
-        recordStore.completedDays(for: trackerId)
-    }
-
-    var isCurrentDateInFuture: Bool {
-        let calendar = Calendar.current
-        return calendar.startOfDay(for: currentDate)
-            > calendar.startOfDay(for: Date())
-    }
-
-    func search(query: String) {
-        searchQuery = query
-        reloadData()
-    }
-
     private func updateEmptyState() {
-        let isEmpty = filteredCategories.isEmpty
+        let isEmpty = viewModel.isEmpty
         emptyView.isHidden = !isEmpty
         trackersCollectionView.isHidden = isEmpty
     }
@@ -182,6 +152,18 @@ final class TrackersViewController: UIViewController {
         navigationItem.rightBarButtonItem = barButtonItem
     }
 
+    private func showError(_ message: String) {
+        let alert = UIAlertController(
+            title: nil,
+            message: message,
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "Ок", style: .default))
+        present(alert, animated: true)
+    }
+
+    // MARK: - Actions
+
     @objc private func onTap() {
         let addNewHabitController = AddTrackerViewController()
         addNewHabitController.delegate = self
@@ -193,8 +175,7 @@ final class TrackersViewController: UIViewController {
     }
 
     @objc private func onDatePickerValueChanged(_ sender: UIDatePicker) {
-        currentDate = sender.date
-        reloadData()
+        viewModel.dateChanged(to: sender.date)
     }
 }
 
@@ -206,49 +187,7 @@ extension TrackersViewController: AddTrackerViewControllerDelegate {
         didCreate tracker: Tracker,
         categoryTitle: String
     ) {
-        do {
-            try trackerStore.addTracker(tracker, categoryTitle: categoryTitle)
-        } catch {
-            assertionFailure("Не удалось сохранить трекер: \(error)")
-            return
-        }
-
-        clearSearch()
-        focusDate(for: tracker)
-        reloadData()
-    }
-
-    private func clearSearch() {
-        searchQuery = ""
-        if searchController.isActive {
-            searchController.searchBar.text = ""
-        }
-    }
-
-    private func focusDate(for tracker: Tracker) {
-        guard !tracker.schedule.isEmpty else { return }
-        if let today = WeekDay(date: currentDate),
-            tracker.schedule.contains(today)
-        {
-            return
-        }
-
-        let calendar = Calendar.current
-        for offset in 1...WeekDay.allCases.count {
-            guard
-                let candidate = calendar.date(
-                    byAdding: .day,
-                    value: offset,
-                    to: currentDate
-                ),
-                let day = WeekDay(date: candidate),
-                tracker.schedule.contains(day)
-            else { continue }
-
-            currentDate = candidate
-            datePicker.setDate(candidate, animated: true)
-            return
-        }
+        viewModel.addTracker(tracker, categoryTitle: categoryTitle)
     }
 }
 
@@ -256,34 +195,12 @@ extension TrackersViewController: AddTrackerViewControllerDelegate {
 
 extension TrackersViewController: TrackerCellDelegate {
     func trackerCellDidTapPlus(_ cell: TrackerCell) {
-        guard !isCurrentDateInFuture,
-            let indexPath = trackersCollectionView.indexPath(for: cell)
+        guard let indexPath = trackersCollectionView.indexPath(for: cell)
         else { return }
 
-        let tracker = filteredCategories[indexPath.section].trackers[
-            indexPath.item
-        ]
-
-        do {
-            try recordStore.toggle(trackerId: tracker.id, on: currentDate)
-        } catch {
-            assertionFailure("Не удалось изменить отметку: \(error)")
-        }
-    }
-}
-
-// MARK: - TrackerStoreDelegate
-
-extension TrackersViewController: TrackerStoreDelegate {
-    func trackerStoreDidChangeContent(_ store: TrackerStore) {
-        reloadData()
-    }
-}
-
-// MARK: - TrackerRecordStoreDelegate
-
-extension TrackersViewController: TrackerRecordStoreDelegate {
-    func trackerRecordStoreDidChangeContent(_ store: TrackerRecordStore) {
-        reloadData()
+        viewModel.toggleTracker(
+            inSection: indexPath.section,
+            at: indexPath.item
+        )
     }
 }

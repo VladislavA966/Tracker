@@ -12,9 +12,20 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
         guard let scene = (scene as? UIWindowScene) else { return }
 
+        let dependencies =
+            (UIApplication.shared.delegate as? AppDelegate)?.dependencies
+            ?? AppDependencies()
+
+        let trackersViewController = TrackersViewController(
+            viewModel: dependencies.makeTrackersViewModel()
+        )
+        let statisticsViewController = StatisticsViewController()
+
         window = UIWindow(windowScene: scene)
-        
-        window?.rootViewController = TabBarViewController()
+        window?.rootViewController = TabBarViewController(
+            trackersViewController: trackersViewController,
+            statisticsViewController: statisticsViewController
+        )
         window?.makeKeyAndVisible()
     }
 
