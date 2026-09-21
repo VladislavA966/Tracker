@@ -1,12 +1,15 @@
-import Foundation
+import UIKit
 
 struct TrackerDraft {
     var trackerName: String = ""
     var schedule: Set<WeekDay> = []
     var category: String?
+    var emoji: String?
+    var color: UIColor?
 
     var canCreate: Bool {
-        !schedule.isEmpty && category != nil && isNameValid
+        !schedule.isEmpty && category != nil && isNameValid && emoji != nil
+            && color != nil
     }
 
     var isNameValid: Bool {
