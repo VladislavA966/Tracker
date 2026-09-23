@@ -4,6 +4,7 @@ final class AppDependencies {
 
     private let trackerStore: TrackerStore
     private let recordStore: TrackerRecordStore
+    private let categoryStore: TrackerCategoryStore
     private let onboardingStorage: OnboardingStorage
 
     var hasSeenOnboarding: Bool {
@@ -15,12 +16,22 @@ final class AppDependencies {
         context: NSManagedObjectContext = CoreDataStack.shared.viewContext,
         onboardingStorage: OnboardingStorage = OnboardingStorage()
     ) {
+        categoryStore = TrackerCategoryStore(context: context)
         trackerStore = TrackerStore(
             context: context,
-            categoryStore: TrackerCategoryStore(context: context)
+            categoryStore: categoryStore
         )
         recordStore = TrackerRecordStore(context: context)
         self.onboardingStorage = onboardingStorage
+    }
+
+    func makeCategoriesViewModel(
+        selectedCategory: String? = nil
+    ) -> CategoriesViewModel {
+        CategoriesViewModel(
+            categoryStore: categoryStore,
+            selectedCategory: selectedCategory
+        )
     }
 
     func makeTrackersViewModel() -> TrackersViewModel {

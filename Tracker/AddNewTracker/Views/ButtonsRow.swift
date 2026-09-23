@@ -2,7 +2,7 @@ import UIKit
 
 final class ButtonsRow: UIStackView {
     let cancelButton = UIButton()
-    let createButton = UIButton()
+    let createButton = PrimaryButton(title: "Создать")
 
     init() {
         super.init(frame: .zero)
@@ -11,7 +11,6 @@ final class ButtonsRow: UIStackView {
         spacing = 16
         heightAnchor.constraint(equalToConstant: 60).isActive = true
         setUpCancelButton()
-        setUpCreateButton()
         addArrangedSubview(cancelButton)
         addArrangedSubview(createButton)
     }
@@ -30,11 +29,4 @@ final class ButtonsRow: UIStackView {
         cancelButton.layer.borderWidth = 1
     }
 
-    private func setUpCreateButton() {
-        createButton.titleLabel?.font = .ypMedium16
-        createButton.setTitle("Создать", for: .normal)
-        createButton.setTitleColor(.whiteDay, for: .normal)
-        createButton.backgroundColor = .ypGray
-        createButton.layer.cornerRadius = 16
-    }
 }

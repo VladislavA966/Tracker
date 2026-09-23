@@ -134,8 +134,6 @@ final class AddTrackerViewController: UIViewController {
             after: contentView.textField
         )
         contentView.buttonsRow.createButton.isEnabled = trackerDraft.canCreate
-        contentView.buttonsRow.createButton.backgroundColor =
-            trackerDraft.canCreate ? .black : .ypGray
     }
 
     func reloadOption(_ option: Option) {

@@ -20,13 +20,8 @@ final class OnboardingViewController: UIPageViewController {
         return control
     }()
 
-    private lazy var actionButton: UIButton = {
-        let button = UIButton()
-        button.setTitle("Вот это технологии!", for: .normal)
-        button.setTitleColor(.whiteDay, for: .normal)
-        button.titleLabel?.font = .ypMedium16
-        button.backgroundColor = .blackDay
-        button.layer.cornerRadius = 16
+    private lazy var actionButton: PrimaryButton = {
+        let button = PrimaryButton(title: "Вот это технологии!")
         button.addTarget(
             self,
             action: #selector(onActionButtonTapped),
@@ -84,7 +79,6 @@ final class OnboardingViewController: UIPageViewController {
                 equalTo: view.safeAreaLayoutGuide.bottomAnchor,
                 constant: -50
             ),
-            actionButton.heightAnchor.constraint(equalToConstant: 60),
         ])
     }
 

@@ -20,6 +20,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         self.dependencies = dependencies
 
         window = UIWindow(windowScene: scene)
+        dependencies.hasSeenOnboarding = false
         window?.rootViewController =
             dependencies.hasSeenOnboarding
             ? makeMainScreen()
