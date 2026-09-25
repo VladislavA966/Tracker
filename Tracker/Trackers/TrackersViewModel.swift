@@ -87,6 +87,18 @@ final class TrackersViewModel {
         )
     }
 
+    func editingModel(inSection section: Int, at index: Int) -> TrackerEditing? {
+        guard let tracker = tracker(inSection: section, at: index),
+            let categoryTitle = sectionTitle(at: section)
+        else { return nil }
+
+        return TrackerEditing(
+            tracker: tracker,
+            categoryTitle: categoryTitle,
+            completedDays: recordStore.completedDays(for: tracker.id)
+        )
+    }
+
     // MARK: - Intents (View -> ViewModel)
 
     func viewDidLoad() {
@@ -124,6 +136,14 @@ final class TrackersViewModel {
             try trackerStore.deleteTracker(withId: id)
         } catch {
             onError?("Не удалось удалить трекер")
+        }
+    }
+
+    func updateTracker(_ tracker: Tracker, categoryTitle: String) {
+        do {
+            try trackerStore.updateTracker(tracker, categoryTitle: categoryTitle)
+        } catch {
+            onError?("Не удалось сохранить изменения")
         }
     }
 

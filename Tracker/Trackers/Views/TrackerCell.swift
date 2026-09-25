@@ -48,7 +48,10 @@ final class TrackerCell: UICollectionViewCell {
         cardView.backgroundColor = tracker.color
         emojiLabel.text = tracker.emoji
         titleLabel.text = tracker.name
-        counterLabel.text = Self.daysTitle(model.completedDays)
+        counterLabel.text = String.localizedStringWithFormat(
+            NSLocalizedString("days_count", comment: ""),
+            model.completedDays
+        )
 
         addButton.backgroundColor = tracker.color
         addButton.alpha = model.isCompleted ? 0.3 : 1
@@ -201,14 +204,5 @@ final class TrackerCell: UICollectionViewCell {
 
     @objc private func addButtonTapped() {
         delegate?.trackerCellDidTapPlus(self)
-    }
-
-    private static func daysTitle(_ count: Int) -> String {
-        if (11...14).contains(count % 100) { return "\(count) дней" }
-        switch count % 10 {
-        case 1: return "\(count) день"
-        case 2...4: return "\(count) дня"
-        default: return "\(count) дней"
-        }
     }
 }

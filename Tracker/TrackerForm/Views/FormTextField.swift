@@ -1,6 +1,6 @@
 import UIKit
 
-final class AddHabitTextField: UITextField {
+final class FormTextField: UITextField {
     var contentInsets = UIEdgeInsets(top: 0, left: 12, bottom: 0, right: 12)
 
     override func textRect(forBounds bounds: CGRect) -> CGRect {

@@ -7,7 +7,7 @@ extension TrackersViewController {
         point: CGPoint
     ) -> UIContextMenuConfiguration? {
         guard let indexPath = indexPaths.first,
-            let tracker = viewModel.tracker(
+            let editing = viewModel.editingModel(
                 inSection: indexPath.section,
                 at: indexPath.item
             )
@@ -17,13 +17,16 @@ extension TrackersViewController {
             identifier: indexPath as NSIndexPath,
             previewProvider: nil
         ) { [weak self] _ in
+            let edit = UIAction(title: "Редактировать") { _ in
+                self?.presentTrackerForm(mode: .edit(editing))
+            }
             let delete = UIAction(
                 title: "Удалить",
                 attributes: .destructive
             ) { _ in
-                self?.confirmDeletion(of: tracker)
+                self?.confirmDeletion(of: editing.tracker)
             }
-            return UIMenu(children: [delete])
+            return UIMenu(children: [edit, delete])
         }
     }
 

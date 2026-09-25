@@ -4,7 +4,7 @@ final class NewCategoryViewController: UIViewController {
 
     var onDone: Bind<String>?
 
-    private let textField = AddHabitTextField()
+    private let textField = FormTextField()
     private let doneButton = PrimaryButton(title: "Готово")
 
     // MARK: - Lifecycle

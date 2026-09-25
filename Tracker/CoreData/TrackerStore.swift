@@ -54,24 +54,42 @@ final class TrackerStore: NSObject {
     func addTracker(_ tracker: Tracker, categoryTitle: String) throws {
         let entity = TrackerCoreData(context: context)
         entity.id = tracker.id
-        entity.name = tracker.name
-        entity.emoji = tracker.emoji
-        entity.colorHex = tracker.color.hexString
-        entity.schedule = encode(tracker.schedule)
         entity.createdAt = Date()
-        entity.category = try categoryStore.category(withTitle: categoryTitle)
+        try fill(entity, with: tracker, categoryTitle: categoryTitle)
+
+        try CoreDataStack.shared.saveContext()
+    }
+
+    func updateTracker(_ tracker: Tracker, categoryTitle: String) throws {
+        guard let entity = try entity(withId: tracker.id) else { return }
+        try fill(entity, with: tracker, categoryTitle: categoryTitle)
 
         try CoreDataStack.shared.saveContext()
     }
 
     func deleteTracker(withId id: UUID) throws {
+        guard let entity = try entity(withId: id) else { return }
+        context.delete(entity)
+        try CoreDataStack.shared.saveContext()
+    }
+
+    private func fill(
+        _ entity: TrackerCoreData,
+        with tracker: Tracker,
+        categoryTitle: String
+    ) throws {
+        entity.name = tracker.name
+        entity.emoji = tracker.emoji
+        entity.colorHex = tracker.color.hexString
+        entity.schedule = encode(tracker.schedule)
+        entity.category = try categoryStore.category(withTitle: categoryTitle)
+    }
+
+    private func entity(withId id: UUID) throws -> TrackerCoreData? {
         let request = TrackerCoreData.fetchRequest()
         request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
         request.fetchLimit = 1
-
-        guard let entity = try context.fetch(request).first else { return }
-        context.delete(entity)
-        try CoreDataStack.shared.saveContext()
+        return try context.fetch(request).first
     }
 
     private func tracker(from entity: TrackerCoreData) -> Tracker? {

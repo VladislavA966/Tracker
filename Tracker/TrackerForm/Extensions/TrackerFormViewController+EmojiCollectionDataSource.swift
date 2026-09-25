@@ -1,6 +1,6 @@
 import UIKit
 
-extension AddTrackerViewController: UICollectionViewDataSource {
+extension TrackerFormViewController: UICollectionViewDataSource {
 
     func collectionView(
         _ collectionView: UICollectionView,

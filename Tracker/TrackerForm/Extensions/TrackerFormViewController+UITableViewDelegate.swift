@@ -1,6 +1,6 @@
 import UIKit
 
-extension AddTrackerViewController: UITableViewDelegate {
+extension TrackerFormViewController: UITableViewDelegate {
     func tableView(
         _ tableView: UITableView,
         didSelectRowAt indexPath: IndexPath

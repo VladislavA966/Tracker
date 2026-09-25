@@ -1,6 +1,6 @@
 import UIKit
 
-extension AddTrackerViewController: UICollectionViewDelegate {
+extension TrackerFormViewController: UICollectionViewDelegate {
     func collectionView(
         _ collectionView: UICollectionView,
         didSelectItemAt indexPath: IndexPath
@@ -14,7 +14,7 @@ extension AddTrackerViewController: UICollectionViewDelegate {
     }
 }
 
-extension AddTrackerViewController: UICollectionViewDelegateFlowLayout {
+extension TrackerFormViewController: UICollectionViewDelegateFlowLayout {
 
     func collectionView(
         _ collectionView: UICollectionView,

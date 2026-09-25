@@ -1,6 +1,6 @@
 import UIKit
 
-extension AddTrackerViewController: ScheduleViewControllerDelegate {
+extension TrackerFormViewController: ScheduleViewControllerDelegate {
     func didSelect(
         _ controller: ScheduleViewController,
         didSelect days: Set<WeekDay>

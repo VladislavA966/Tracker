@@ -165,10 +165,14 @@ final class TrackersViewController: UIViewController {
     // MARK: - Actions
 
     @objc private func onTap() {
-        let addNewHabitController = AddTrackerViewController()
-        addNewHabitController.delegate = self
+        presentTrackerForm(mode: .create)
+    }
+
+    func presentTrackerForm(mode: TrackerFormViewController.Mode) {
+        let trackerFormController = TrackerFormViewController(mode: mode)
+        trackerFormController.delegate = self
         let navigationController = UINavigationController(
-            rootViewController: addNewHabitController
+            rootViewController: trackerFormController
         )
         navigationController.modalPresentationStyle = .pageSheet
         present(navigationController, animated: true)
@@ -179,15 +183,23 @@ final class TrackersViewController: UIViewController {
     }
 }
 
-// MARK: - AddTrackerViewControllerDelegate
+// MARK: - TrackerFormViewControllerDelegate
 
-extension TrackersViewController: AddTrackerViewControllerDelegate {
-    func addTrackerViewController(
-        _ controller: AddTrackerViewController,
+extension TrackersViewController: TrackerFormViewControllerDelegate {
+    func trackerFormViewController(
+        _ controller: TrackerFormViewController,
         didCreate tracker: Tracker,
         categoryTitle: String
     ) {
         viewModel.addTracker(tracker, categoryTitle: categoryTitle)
+    }
+
+    func trackerFormViewController(
+        _ controller: TrackerFormViewController,
+        didUpdate tracker: Tracker,
+        categoryTitle: String
+    ) {
+        viewModel.updateTracker(tracker, categoryTitle: categoryTitle)
     }
 }
 

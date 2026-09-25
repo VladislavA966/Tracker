@@ -1,14 +1,20 @@
 import UIKit
 
-protocol AddTrackerViewControllerDelegate: AnyObject {
-    func addTrackerViewController(
-        _ controller: AddTrackerViewController,
+protocol TrackerFormViewControllerDelegate: AnyObject {
+    func trackerFormViewController(
+        _ controller: TrackerFormViewController,
         didCreate tracker: Tracker,
+        categoryTitle: String
+    )
+
+    func trackerFormViewController(
+        _ controller: TrackerFormViewController,
+        didUpdate tracker: Tracker,
         categoryTitle: String
     )
 }
 
-final class AddTrackerViewController: UIViewController {
+final class TrackerFormViewController: UIViewController {
     enum Option: String, CaseIterable {
         case category = "Категория"
         case schedule = "Расписание"
@@ -28,15 +34,25 @@ final class AddTrackerViewController: UIViewController {
         .colorSelection16, .colorSelection17, .colorSelection18,
     ]
 
-    let contentView = AddHabitContentView()
+    let contentView = TrackerFormContentView()
     let scheduleVC = ScheduleViewController()
     var trackerDraft = TrackerDraft()
-    weak var delegate: AddTrackerViewControllerDelegate?
+    weak var delegate: TrackerFormViewControllerDelegate?
+
+    let mode: Mode
+
+    init(mode: Mode = .create) {
+        self.mode = mode
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .whiteDay
-        navigationItem.title = "Новая привычка"
         setUpContentView()
         setUpTextField()
         setUpOptionTableView()
@@ -44,6 +60,7 @@ final class AddTrackerViewController: UIViewController {
         setUpKeyboardDismiss()
         setUpEmojisCollectionView()
         setUpColorsCollectionView()
+        applyMode()
         renderDraftState()
     }
 
@@ -168,17 +185,13 @@ final class AddTrackerViewController: UIViewController {
         else { return }
 
         let tracker = Tracker(
-            id: UUID(),
+            id: mode.trackerId,
             name: trackerDraft.trackerName,
             color: color,
             emoji: emoji,
             schedule: trackerDraft.schedule
         )
-        delegate?.addTrackerViewController(
-            self,
-            didCreate: tracker,
-            categoryTitle: categoryTitle
-        )
+        notifyDelegate(with: tracker, categoryTitle: categoryTitle)
         dismiss(animated: true)
     }
 }

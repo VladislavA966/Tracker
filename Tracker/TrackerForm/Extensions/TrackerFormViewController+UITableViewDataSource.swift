@@ -1,6 +1,6 @@
 import UIKit
 
-extension AddTrackerViewController: UITableViewDataSource {
+extension TrackerFormViewController: UITableViewDataSource {
     func tableView(
         _ tableView: UITableView,
         numberOfRowsInSection section: Int

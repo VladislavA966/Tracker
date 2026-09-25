@@ -1,9 +1,10 @@
 import UIKit
 
-final class AddHabitContentView: UIView {
+final class TrackerFormContentView: UIView {
     let scrollView = UIScrollView()
     let contentStack = UIStackView()
-    let textField = AddHabitTextField()
+    let daysCounterLabel = UILabel()
+    let textField = FormTextField()
     let buttonsRow = ButtonsRow()
     let optionTableView = OptionsTableView()
     let emojisCollectionView = SelfSizingCollectionView(
@@ -11,7 +12,7 @@ final class AddHabitContentView: UIView {
         collectionViewLayout: UICollectionViewFlowLayout()
     )
     let errorLabel = ErrorLabel()
-    let emojiCollectionHeader = AddTrackerHeaderLabel(
+    let emojiCollectionHeader = TrackerFormHeaderLabel(
         frame: .zero,
         title: "Emoji"
     )
@@ -19,7 +20,7 @@ final class AddHabitContentView: UIView {
         frame: .zero,
         collectionViewLayout: UICollectionViewFlowLayout()
     )
-    let colorCollectionHeader = AddTrackerHeaderLabel(
+    let colorCollectionHeader = TrackerFormHeaderLabel(
         frame: .zero,
         title: "Цвет"
     )
@@ -37,6 +38,12 @@ final class AddHabitContentView: UIView {
             trailing: 16
         )
 
+        daysCounterLabel.font = .ypBold32
+        daysCounterLabel.textAlignment = .center
+        daysCounterLabel.textColor = .blackDay
+        daysCounterLabel.isHidden = true
+
+        contentStack.addArrangedSubview(daysCounterLabel)
         contentStack.addArrangedSubview(textField)
         contentStack.addArrangedSubview(errorLabel)
         contentStack.addArrangedSubview(optionTableView)

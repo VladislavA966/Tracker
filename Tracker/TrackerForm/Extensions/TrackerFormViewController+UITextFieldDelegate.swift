@@ -1,6 +1,6 @@
 import UIKit
 
-extension AddTrackerViewController: UITextFieldDelegate {
+extension TrackerFormViewController: UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder()
         return true
