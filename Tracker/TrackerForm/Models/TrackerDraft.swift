@@ -26,3 +26,15 @@ struct TrackerDraft {
             .joined(separator: ", ")
     }
 }
+
+extension TrackerDraft {
+    init(tracker: Tracker, categoryTitle: String) {
+        self.init(
+            trackerName: tracker.name,
+            schedule: tracker.schedule,
+            category: categoryTitle,
+            emoji: tracker.emoji,
+            color: tracker.color
+        )
+    }
+}

@@ -3,7 +3,7 @@ import UIKit
 extension TrackerFormViewController {
     enum Mode {
         case create
-        case edit(TrackerEditing)
+        case edit(Tracker, categoryTitle: String, completedDays: Int)
 
         var title: String {
             switch self {
@@ -23,7 +23,14 @@ extension TrackerFormViewController {
         var trackerId: UUID {
             switch self {
             case .create: UUID()
-            case .edit(let editing): editing.tracker.id
+            case .edit(let tracker, _, _): tracker.id
+            }
+        }
+
+        var isPinned: Bool {
+            switch self {
+            case .create: false
+            case .edit(let tracker, _, _): tracker.isPinned
             }
         }
     }
@@ -35,9 +42,10 @@ extension TrackerFormViewController {
             for: .normal
         )
 
-        guard case .edit(let editing) = mode else { return }
-        showDaysCounter(editing.completedDays)
-        prefill(with: editing.tracker, categoryTitle: editing.categoryTitle)
+        guard case let .edit(tracker, categoryTitle, completedDays) = mode
+        else { return }
+        showDaysCounter(completedDays)
+        prefill(with: tracker, categoryTitle: categoryTitle)
     }
 
     func notifyDelegate(with tracker: Tracker, categoryTitle: String) {
@@ -70,13 +78,7 @@ extension TrackerFormViewController {
     }
 
     private func prefill(with tracker: Tracker, categoryTitle: String) {
-        trackerDraft = TrackerDraft(
-            trackerName: tracker.name,
-            schedule: tracker.schedule,
-            category: categoryTitle,
-            emoji: tracker.emoji,
-            color: tracker.color
-        )
+        trackerDraft = TrackerDraft(tracker: tracker, categoryTitle: categoryTitle)
         contentView.textField.text = tracker.name
         scheduleVC.selectedWeekDays = tracker.schedule
 

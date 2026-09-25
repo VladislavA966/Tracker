@@ -67,6 +67,12 @@ final class TrackerStore: NSObject {
         try CoreDataStack.shared.saveContext()
     }
 
+    func setPinned(_ isPinned: Bool, forTrackerWithId id: UUID) throws {
+        guard let entity = try entity(withId: id) else { return }
+        entity.isPinned = isPinned
+        try CoreDataStack.shared.saveContext()
+    }
+
     func deleteTracker(withId id: UUID) throws {
         guard let entity = try entity(withId: id) else { return }
         context.delete(entity)
@@ -82,6 +88,7 @@ final class TrackerStore: NSObject {
         entity.emoji = tracker.emoji
         entity.colorHex = tracker.color.hexString
         entity.schedule = encode(tracker.schedule)
+        entity.isPinned = tracker.isPinned
         entity.category = try categoryStore.category(withTitle: categoryTitle)
     }
 
@@ -108,7 +115,8 @@ final class TrackerStore: NSObject {
             name: name,
             color: color,
             emoji: emoji,
-            schedule: decode(entity.schedule)
+            schedule: decode(entity.schedule),
+            isPinned: entity.isPinned
         )
     }
 

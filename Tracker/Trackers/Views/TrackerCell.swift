@@ -23,6 +23,7 @@ final class TrackerCell: UICollectionViewCell {
     private let cardView = UIStackView()
     private let emojiLabel = UILabel()
     private let titleLabel = UILabel()
+    private let pinImageView = UIImageView()
     private let footerView = UIStackView()
     private let counterLabel = UILabel()
     private let addButton = UIButton(type: .system)
@@ -33,6 +34,7 @@ final class TrackerCell: UICollectionViewCell {
         setUpCardView()
         setUpEmojiLabel()
         setUpTitleLabel()
+        setUpPinImageView()
         setUpFooterView()
         setUpCounterLabel()
         setUpAddButton()
@@ -48,6 +50,7 @@ final class TrackerCell: UICollectionViewCell {
         cardView.backgroundColor = tracker.color
         emojiLabel.text = tracker.emoji
         titleLabel.text = tracker.name
+        pinImageView.isHidden = !tracker.isPinned
         counterLabel.text = String.localizedStringWithFormat(
             NSLocalizedString("days_count", comment: ""),
             model.completedDays
@@ -75,6 +78,7 @@ final class TrackerCell: UICollectionViewCell {
         contentView.addSubview(footerView)
         cardView.addArrangedSubview(emojiLabel)
         cardView.addArrangedSubview(titleLabel)
+        cardView.addSubview(pinImageView)
         footerView.addArrangedSubview(counterLabel)
         footerView.addArrangedSubview(addButton)
     }
@@ -110,6 +114,17 @@ final class TrackerCell: UICollectionViewCell {
         titleLabel.font = .ypMedium12
         titleLabel.textColor = .white
         titleLabel.numberOfLines = 2
+    }
+
+    private func setUpPinImageView() {
+        pinImageView.translatesAutoresizingMaskIntoConstraints = false
+        pinImageView.image = UIImage(
+            systemName: "pin.fill",
+            withConfiguration: UIImage.SymbolConfiguration(pointSize: 10)
+        )
+        pinImageView.tintColor = .white
+        pinImageView.contentMode = .center
+        pinImageView.isHidden = true
     }
 
     private func setUpFooterView() {
@@ -175,6 +190,21 @@ final class TrackerCell: UICollectionViewCell {
 
             titleLabel.widthAnchor.constraint(
                 equalTo: cardView.layoutMarginsGuide.widthAnchor
+            ),
+
+            pinImageView.topAnchor.constraint(
+                equalTo: cardView.topAnchor,
+                constant: Layout.padding
+            ),
+            pinImageView.trailingAnchor.constraint(
+                equalTo: cardView.trailingAnchor,
+                constant: -4
+            ),
+            pinImageView.widthAnchor.constraint(
+                equalToConstant: Layout.emojiSize
+            ),
+            pinImageView.heightAnchor.constraint(
+                equalToConstant: Layout.emojiSize
             ),
 
             footerView.topAnchor.constraint(

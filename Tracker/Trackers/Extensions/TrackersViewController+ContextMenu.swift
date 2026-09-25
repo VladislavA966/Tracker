@@ -7,7 +7,7 @@ extension TrackersViewController {
         point: CGPoint
     ) -> UIContextMenuConfiguration? {
         guard let indexPath = indexPaths.first,
-            let editing = viewModel.editingModel(
+            let tracker = viewModel.tracker(
                 inSection: indexPath.section,
                 at: indexPath.item
             )
@@ -17,16 +17,24 @@ extension TrackersViewController {
             identifier: indexPath as NSIndexPath,
             previewProvider: nil
         ) { [weak self] _ in
+            let pin = UIAction(
+                title: tracker.isPinned ? "Открепить" : "Закрепить"
+            ) { _ in
+                self?.viewModel.setPinned(
+                    !tracker.isPinned,
+                    forTrackerWithId: tracker.id
+                )
+            }
             let edit = UIAction(title: "Редактировать") { _ in
-                self?.presentTrackerForm(mode: .edit(editing))
+                self?.presentEditForm(for: tracker)
             }
             let delete = UIAction(
                 title: "Удалить",
                 attributes: .destructive
             ) { _ in
-                self?.confirmDeletion(of: editing.tracker)
+                self?.confirmDeletion(of: tracker)
             }
-            return UIMenu(children: [edit, delete])
+            return UIMenu(children: [pin, edit, delete])
         }
     }
 
@@ -63,6 +71,24 @@ extension TrackersViewController {
             cornerRadius: card.layer.cornerRadius
         )
         return UITargetedPreview(view: card, parameters: parameters)
+    }
+
+    private func presentEditForm(for tracker: Tracker) {
+        guard
+            let categoryTitle = viewModel.categoryTitle(
+                forTrackerWithId: tracker.id
+            )
+        else { return }
+
+        presentTrackerForm(
+            mode: .edit(
+                tracker,
+                categoryTitle: categoryTitle,
+                completedDays: viewModel.completedDays(
+                    forTrackerWithId: tracker.id
+                )
+            )
+        )
     }
 
     private func confirmDeletion(of tracker: Tracker) {

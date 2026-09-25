@@ -189,7 +189,8 @@ final class TrackerFormViewController: UIViewController {
             name: trackerDraft.trackerName,
             color: color,
             emoji: emoji,
-            schedule: trackerDraft.schedule
+            schedule: trackerDraft.schedule,
+            isPinned: mode.isPinned
         )
         notifyDelegate(with: tracker, categoryTitle: categoryTitle)
         dismiss(animated: true)
