@@ -3,6 +3,12 @@ import Foundation
 
 typealias Bind<T> = (T) -> Void
 
+enum TrackersEmptyState {
+    case none
+    case noTrackers
+    case nothingFound
+}
+
 final class TrackersViewModel {
 
     // MARK: - Bindings (ViewModel -> View)
@@ -24,6 +30,10 @@ final class TrackersViewModel {
         didSet { onSearchQueryChange?(searchQuery) }
     }
 
+    private(set) var filter: TrackerFilter = .all
+
+    private(set) var hasTrackersOnDate = false
+
     private var completedIds: Set<UUID> = []
 
     private static let pinnedCategoryTitle = "Закреплённые"
@@ -44,7 +54,12 @@ final class TrackersViewModel {
 
     // MARK: - Derived state
 
-    var isEmpty: Bool { visibleCategories.isEmpty }
+    var emptyState: TrackersEmptyState {
+        guard visibleCategories.isEmpty else { return .none }
+        return hasTrackersOnDate ? .nothingFound : .noTrackers
+    }
+
+    var isFilterButtonHidden: Bool { !hasTrackersOnDate }
 
     var numberOfSections: Int { visibleCategories.count }
 
@@ -113,6 +128,17 @@ final class TrackersViewModel {
         reload()
     }
 
+    func selectFilter(_ newFilter: TrackerFilter) {
+        switch newFilter {
+        case .today:
+            filter = .all
+            currentDate = Date()
+        case .all, .completed, .uncompleted:
+            filter = newFilter
+        }
+        reload()
+    }
+
     func search(query: String) {
         guard searchQuery != query else { return }
         searchQuery = query
@@ -172,22 +198,37 @@ final class TrackersViewModel {
 
     private func reload() {
         completedIds = recordStore.completedTrackerIds(on: currentDate)
+        hasTrackersOnDate = categories.contains { category in
+            category.trackers.contains(where: isScheduledOnCurrentDate)
+        }
         visibleCategories = makeVisibleCategories()
     }
 
+    private func isScheduledOnCurrentDate(_ tracker: Tracker) -> Bool {
+        guard let weekDay = WeekDay(date: currentDate) else { return false }
+        return tracker.schedule.isEmpty || tracker.schedule.contains(weekDay)
+    }
+
+    private func matchesFilter(_ tracker: Tracker) -> Bool {
+        switch filter {
+        case .all, .today: true
+        case .completed: completedIds.contains(tracker.id)
+        case .uncompleted: !completedIds.contains(tracker.id)
+        }
+    }
+
     private func makeVisibleCategories() -> [TrackerCategory] {
-        guard let weekDay = WeekDay(date: currentDate) else { return [] }
         let query =
             searchQuery
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .lowercased()
 
-        let isVisible: (Tracker) -> Bool = { tracker in
-            let matchesDay =
-                tracker.schedule.isEmpty || tracker.schedule.contains(weekDay)
+        let isVisible: (Tracker) -> Bool = { [self] tracker in
             let matchesQuery =
                 query.isEmpty || tracker.name.lowercased().contains(query)
-            return matchesDay && matchesQuery
+            return isScheduledOnCurrentDate(tracker)
+                && matchesFilter(tracker)
+                && matchesQuery
         }
 
         let pinned = categories

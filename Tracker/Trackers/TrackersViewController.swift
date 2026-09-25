@@ -29,6 +29,26 @@ final class TrackersViewController: UIViewController {
         return controller
     }()
 
+    private enum Layout {
+        static let filterButtonSize = CGSize(width: 114, height: 50)
+        static let filterButtonBottomInset: CGFloat = 16
+        static let filterButtonTopGap: CGFloat = 16
+    }
+
+    private lazy var filterButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setTitle("Фильтры", for: .normal)
+        button.titleLabel?.font = .ypRegular17
+        button.backgroundColor = .ypBlue
+        button.layer.cornerRadius = 16
+        button.addTarget(
+            self,
+            action: #selector(onFilterButtonTapped),
+            for: .touchUpInside
+        )
+        return button
+    }()
+
     private let emptyView = EmptyView(
         title: "Что будем отслеживать?",
         imageName: AppImages.emptyViewImage
@@ -53,6 +73,7 @@ final class TrackersViewController: UIViewController {
         setUpNavigationBar()
         setUpEmptyView()
         setUpCollectionView()
+        setUpFilterButton()
         setUpBindings()
         viewModel.viewDidLoad()
     }
@@ -63,6 +84,7 @@ final class TrackersViewController: UIViewController {
             guard let self else { return }
             self.trackersCollectionView.reloadData()
             self.updateEmptyState()
+            self.updateFilterButton()
         }
 
         viewModel.onDateChange = { [weak self] date in
@@ -85,9 +107,59 @@ final class TrackersViewController: UIViewController {
     // MARK: - Setup
 
     private func updateEmptyState() {
-        let isEmpty = viewModel.isEmpty
-        emptyView.isHidden = !isEmpty
-        trackersCollectionView.isHidden = isEmpty
+        let state = viewModel.emptyState
+        emptyView.isHidden = state == .none
+        trackersCollectionView.isHidden = state != .none
+
+        switch state {
+        case .none:
+            break
+        case .noTrackers:
+            emptyView.configure(
+                title: "Что будем отслеживать?",
+                imageName: AppImages.emptyViewImage
+            )
+        case .nothingFound:
+            emptyView.configure(
+                title: "Ничего не найдено",
+                imageName: AppImages.nothingFoundImage
+            )
+        }
+    }
+
+    private func updateFilterButton() {
+        filterButton.isHidden = viewModel.isFilterButtonHidden
+        filterButton.setTitleColor(
+            viewModel.filter.isActive ? .ypRed : .white,
+            for: .normal
+        )
+    }
+
+    private func setUpFilterButton() {
+        // Добавляем после коллекции — кнопка рисуется поверх неё.
+        view.addSubview(filterButton)
+        filterButton.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            filterButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            filterButton.bottomAnchor.constraint(
+                equalTo: view.safeAreaLayoutGuide.bottomAnchor,
+                constant: -Layout.filterButtonBottomInset
+            ),
+            filterButton.widthAnchor.constraint(
+                equalToConstant: Layout.filterButtonSize.width
+            ),
+            filterButton.heightAnchor.constraint(
+                equalToConstant: Layout.filterButtonSize.height
+            ),
+        ])
+
+        // Оверскролл: последние карточки докручиваются выше кнопки.
+        let bottomInset =
+            Layout.filterButtonSize.height
+            + Layout.filterButtonBottomInset
+            + Layout.filterButtonTopGap
+        trackersCollectionView.contentInset.bottom = bottomInset
+        trackersCollectionView.verticalScrollIndicatorInsets.bottom = bottomInset
     }
 
     private func setUpCollectionView() {
@@ -176,6 +248,20 @@ final class TrackersViewController: UIViewController {
         )
         navigationController.modalPresentationStyle = .pageSheet
         present(navigationController, animated: true)
+    }
+
+    @objc private func onFilterButtonTapped() {
+        let filtersController = FiltersViewController(
+            selectedFilter: viewModel.filter
+        )
+        filtersController.onSelect = { [weak self] filter in
+            self?.viewModel.selectFilter(filter)
+            self?.dismiss(animated: true)
+        }
+        present(
+            UINavigationController(rootViewController: filtersController),
+            animated: true
+        )
     }
 
     @objc private func onDatePickerValueChanged(_ sender: UIDatePicker) {
