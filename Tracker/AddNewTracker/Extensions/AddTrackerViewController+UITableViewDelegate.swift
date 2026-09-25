@@ -13,8 +13,24 @@ extension AddTrackerViewController: UITableViewDelegate {
     }
 
     private func selectCategory() {
-        trackerDraft.category = "Важное"
-        reloadOption(.category)
+        let viewModel = CategoriesViewModel(
+            selectedCategory: trackerDraft.category
+        )
+        viewModel.onCategoryConfirmed = { [weak self] title in
+            guard let self else { return }
+            self.trackerDraft.category = title
+            self.reloadOption(.category)
+            self.dismiss(animated: true)
+        }
+
+        present(
+            UINavigationController(
+                rootViewController: CategoriesViewController(
+                    viewModel: viewModel
+                )
+            ),
+            animated: true
+        )
     }
 
     private func selectSchedule() {

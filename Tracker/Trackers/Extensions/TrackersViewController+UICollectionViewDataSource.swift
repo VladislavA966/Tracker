@@ -1,16 +1,16 @@
 import UIKit
 
 extension TrackersViewController: UICollectionViewDataSource {
-    
+
     func numberOfSections(in collectionView: UICollectionView) -> Int {
-        filteredCategories.count
+        viewModel.numberOfSections
     }
-    
+
     func collectionView(
         _ collectionView: UICollectionView,
         numberOfItemsInSection section: Int
     ) -> Int {
-        filteredCategories[section].trackers.count
+        viewModel.numberOfTrackers(in: section)
     }
 
     func collectionView(
@@ -25,19 +25,25 @@ extension TrackersViewController: UICollectionViewDataSource {
         else {
             fatalError("Could not dequeue cell")
         }
-        let tracker = filteredCategories[indexPath.section].trackers[indexPath.item]
+        guard
+            let model = viewModel.cellModel(
+                inSection: indexPath.section,
+                at: indexPath.item
+            )
+        else {
+            return cell
+        }
+
         cell.delegate = self
-        cell.configure(
-            with: tracker,
-            isCompleted: isCompleted(tracker.id),
-            completedDays: completedDays(for: tracker.id),
-            isPlusEnabled: !isCurrentDateInFuture
-        )
+        cell.configure(with: model)
         return cell
     }
-    
-    
-    func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
+
+    func collectionView(
+        _ collectionView: UICollectionView,
+        viewForSupplementaryElementOfKind kind: String,
+        at indexPath: IndexPath
+    ) -> UICollectionReusableView {
         let headerView = collectionView.dequeueReusableSupplementaryView(
             ofKind: kind,
             withReuseIdentifier: "header",
@@ -45,7 +51,9 @@ extension TrackersViewController: UICollectionViewDataSource {
         ) as? TrackerSectionHeaderView
 
         if let headerView {
-            headerView.titleLabel.text = filteredCategories[indexPath.section].headerTitle
+            headerView.titleLabel.text = viewModel.sectionTitle(
+                at: indexPath.section
+            )
             return headerView
         } else {
             return UICollectionReusableView()
