@@ -119,6 +119,14 @@ final class TrackersViewModel {
         }
     }
 
+    func deleteTracker(withId id: UUID) {
+        do {
+            try trackerStore.deleteTracker(withId: id)
+        } catch {
+            onError?("Не удалось удалить трекер")
+        }
+    }
+
     func addTracker(_ tracker: Tracker, categoryTitle: String) {
         do {
             try trackerStore.addTracker(tracker, categoryTitle: categoryTitle)

@@ -64,6 +64,16 @@ final class TrackerStore: NSObject {
         try CoreDataStack.shared.saveContext()
     }
 
+    func deleteTracker(withId id: UUID) throws {
+        let request = TrackerCoreData.fetchRequest()
+        request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
+        request.fetchLimit = 1
+
+        guard let entity = try context.fetch(request).first else { return }
+        context.delete(entity)
+        try CoreDataStack.shared.saveContext()
+    }
+
     private func tracker(from entity: TrackerCoreData) -> Tracker? {
         guard
             let id = entity.id,
