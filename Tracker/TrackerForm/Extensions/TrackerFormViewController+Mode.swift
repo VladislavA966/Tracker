@@ -7,15 +7,15 @@ extension TrackerFormViewController {
 
         var title: String {
             switch self {
-            case .create: "Новая привычка"
-            case .edit: "Редактирование привычки"
+            case .create: String(localized: .formNewTracker)
+            case .edit: String(localized: .formEditTracker)
             }
         }
 
         var actionTitle: String {
             switch self {
-            case .create: "Создать"
-            case .edit: "Сохранить"
+            case .create: String(localized: .formCreate)
+            case .edit: String(localized: .formSave)
             }
         }
 
@@ -70,10 +70,7 @@ extension TrackerFormViewController {
     private func showDaysCounter(_ days: Int) {
         let label = contentView.daysCounterLabel
         label.isHidden = false
-        label.text = String.localizedStringWithFormat(
-            NSLocalizedString("days_count", comment: ""),
-            days
-        )
+        label.text = String(localized: .daysCount(days))
         contentView.contentStack.setCustomSpacing(40, after: label)
     }
 

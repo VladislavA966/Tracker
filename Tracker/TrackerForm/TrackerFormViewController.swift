@@ -15,9 +15,16 @@ protocol TrackerFormViewControllerDelegate: AnyObject {
 }
 
 final class TrackerFormViewController: UIViewController {
-    enum Option: String, CaseIterable {
-        case category = "Категория"
-        case schedule = "Расписание"
+    enum Option: CaseIterable {
+        case category
+        case schedule
+
+        var title: String {
+            switch self {
+            case .category: String(localized: .formCategory)
+            case .schedule: String(localized: .formSchedule)
+            }
+        }
     }
 
     let emojis = [

@@ -2,7 +2,7 @@ import UIKit
 
 final class ButtonsRow: UIStackView {
     let cancelButton = UIButton()
-    let createButton = PrimaryButton(title: "Создать")
+    let createButton = PrimaryButton(title: String(localized: .formCreate))
 
     init() {
         super.init(frame: .zero)
@@ -21,7 +21,7 @@ final class ButtonsRow: UIStackView {
 
     private func setUpCancelButton() {
         cancelButton.titleLabel?.font = .ypMedium16
-        cancelButton.setTitle("Отменить", for: .normal)
+        cancelButton.setTitle(String(localized: .commonCancel), for: .normal)
         cancelButton.setTitleColor(.ypRed, for: .normal)
         cancelButton.backgroundColor = .clear
         cancelButton.layer.cornerRadius = 16

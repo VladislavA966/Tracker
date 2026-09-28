@@ -51,10 +51,7 @@ final class TrackerCell: UICollectionViewCell {
         emojiLabel.text = tracker.emoji
         titleLabel.text = tracker.name
         pinImageView.isHidden = !tracker.isPinned
-        counterLabel.text = String.localizedStringWithFormat(
-            NSLocalizedString("days_count", comment: ""),
-            model.completedDays
-        )
+        counterLabel.text = String(localized: .daysCount(model.completedDays))
 
         addButton.backgroundColor = tracker.color
         addButton.alpha = model.isCompleted ? 0.3 : 1
@@ -101,7 +98,6 @@ final class TrackerCell: UICollectionViewCell {
     }
 
     private func setUpEmojiLabel() {
-        emojiLabel.text = "👌"
         emojiLabel.font = .systemFont(ofSize: 14)
         emojiLabel.textAlignment = .center
         emojiLabel.backgroundColor = .white.withAlphaComponent(0.3)
@@ -110,7 +106,6 @@ final class TrackerCell: UICollectionViewCell {
     }
 
     private func setUpTitleLabel() {
-        titleLabel.text = "Какая то прикольная привычка"
         titleLabel.font = .ypMedium12
         titleLabel.textColor = .white
         titleLabel.numberOfLines = 2
@@ -142,7 +137,6 @@ final class TrackerCell: UICollectionViewCell {
     }
 
     private func setUpCounterLabel() {
-        counterLabel.text = "0 дней"
         counterLabel.font = .ypMedium12
         counterLabel.textColor = .blackDay
     }

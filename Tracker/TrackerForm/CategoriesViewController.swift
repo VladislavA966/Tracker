@@ -5,9 +5,9 @@ final class CategoriesViewController: UIViewController {
     private let viewModel: CategoriesViewModel
 
     private let tableView = OptionsTableView()
-    private let addButton = PrimaryButton(title: "Добавить категорию")
+    private let addButton = PrimaryButton(title: String(localized: .categoriesAdd))
     private let emptyView = EmptyView(
-        title: "Привычки и события можно\nобъединить по смыслу",
+        title: String(localized: .categoriesEmpty),
         imageName: AppImages.emptyViewImage
     )
 
@@ -26,7 +26,7 @@ final class CategoriesViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        navigationItem.title = "Категория"
+        navigationItem.title = String(localized: .categoriesTitle)
         view.backgroundColor = .whiteDay
         setUpAddButton()
         setUpEmptyView()
@@ -139,7 +139,7 @@ final class CategoriesViewController: UIViewController {
             message: message,
             preferredStyle: .alert
         )
-        alert.addAction(UIAlertAction(title: "Ок", style: .default))
+        alert.addAction(UIAlertAction(title: String(localized: .commonOk), style: .default))
         present(alert, animated: true)
     }
 

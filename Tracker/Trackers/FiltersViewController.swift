@@ -23,7 +23,7 @@ final class FiltersViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        navigationItem.title = "Фильтры"
+        navigationItem.title = String(localized: .filtersTitle)
         view.backgroundColor = .whiteDay
         setUpTableView()
     }

@@ -70,11 +70,11 @@ final class CategoriesViewModel {
             try categoryStore.addCategory(title: title)
             selectedCategory = title
         } catch TrackerCategoryStoreError.emptyTitle {
-            onError?("Название категории не может быть пустым")
+            onError?(String(localized: .categoriesErrorEmpty))
         } catch TrackerCategoryStoreError.duplicateTitle {
-            onError?("Такая категория уже есть")
+            onError?(String(localized: .categoriesErrorDuplicate))
         } catch {
-            onError?("Не удалось сохранить категорию")
+            onError?(String(localized: .categoriesErrorSave))
         }
     }
 

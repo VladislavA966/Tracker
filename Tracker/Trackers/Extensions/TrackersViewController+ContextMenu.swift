@@ -18,18 +18,18 @@ extension TrackersViewController {
             previewProvider: nil
         ) { [weak self] _ in
             let pin = UIAction(
-                title: tracker.isPinned ? "Открепить" : "Закрепить"
+                title: tracker.isPinned ? String(localized: .trackersMenuUnpin) : String(localized: .trackersMenuPin)
             ) { _ in
                 self?.viewModel.setPinned(
                     !tracker.isPinned,
                     forTrackerWithId: tracker.id
                 )
             }
-            let edit = UIAction(title: "Редактировать") { _ in
+            let edit = UIAction(title: String(localized: .trackersMenuEdit)) { _ in
                 self?.presentEditForm(for: tracker)
             }
             let delete = UIAction(
-                title: "Удалить",
+                title: String(localized: .trackersMenuDelete),
                 attributes: .destructive
             ) { _ in
                 self?.confirmDeletion(of: tracker)
@@ -94,16 +94,16 @@ extension TrackersViewController {
     private func confirmDeletion(of tracker: Tracker) {
         let alert = UIAlertController(
             title: nil,
-            message: "Уверены что хотите удалить трекер?",
+            message: String(localized: .trackersDeleteAlertMessage),
             preferredStyle: .actionSheet
         )
         alert.addAction(
-            UIAlertAction(title: "Удалить", style: .destructive) {
+            UIAlertAction(title: String(localized: .trackersMenuDelete), style: .destructive) {
                 [weak self] _ in
                 self?.viewModel.deleteTracker(withId: tracker.id)
             }
         )
-        alert.addAction(UIAlertAction(title: "Отменить", style: .cancel))
+        alert.addAction(UIAlertAction(title: String(localized: .commonCancel), style: .cancel))
         present(alert, animated: true)
     }
 }

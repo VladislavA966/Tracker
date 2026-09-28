@@ -8,11 +8,11 @@ struct OnboardingPageConfig {
     static let all: [OnboardingPageConfig] = [
         OnboardingPageConfig(
             imageName: AppImages.onboardingBlue,
-            title: "Отслеживайте только то, что хотите"
+            title: String(localized: .onboardingFirst)
         ),
         OnboardingPageConfig(
             imageName: AppImages.onboardingRed,
-            title: "Даже если это не литры воды и йога"
+            title: String(localized: .onboardingSecond)
         ),
     ]
 }

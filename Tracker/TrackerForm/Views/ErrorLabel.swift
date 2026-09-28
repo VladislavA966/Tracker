@@ -3,7 +3,9 @@ import UIKit
 final class ErrorLabel: UILabel {
     override init(frame: CGRect) {
         super.init(frame: frame)
-        text = "Ограничение \(AppConstants.trackerNameValidationMaxLength) символов"
+        text = String(
+            localized: .formNameLimit(AppConstants.trackerNameValidationMaxLength)
+        )
         font = .ypMedium12
         textColor = .ypRed
         textAlignment = .center

@@ -15,7 +15,7 @@ final class FormTextField: UITextField {
         super.init(frame: frame)
         font = .ypRegular17
         clearButtonMode = .whileEditing
-        placeholder = "Введите название трекера"
+        placeholder = String(localized: .formNamePlaceholder)
         backgroundColor = .backgroundDay
         heightAnchor.constraint(
             equalToConstant: AppConstants.optionRowHeight

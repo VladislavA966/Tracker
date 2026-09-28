@@ -23,7 +23,7 @@ final class TrackersViewController: UIViewController {
         let controller = UISearchController(searchResultsController: nil)
         controller.searchResultsUpdater = self
         controller.obscuresBackgroundDuringPresentation = false
-        controller.searchBar.placeholder = "Поиск"
+        controller.searchBar.placeholder = String(localized: .trackersSearchPlaceholder)
         return controller
     }()
 
@@ -35,7 +35,7 @@ final class TrackersViewController: UIViewController {
 
     private lazy var filterButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Фильтры", for: .normal)
+        button.setTitle(String(localized: .trackersFiltersButton), for: .normal)
         button.titleLabel?.font = .ypRegular17
         button.backgroundColor = .ypBlue
         button.layer.cornerRadius = 16
@@ -48,7 +48,7 @@ final class TrackersViewController: UIViewController {
     }()
 
     private let emptyView = EmptyView(
-        title: "Что будем отслеживать?",
+        title: String(localized: .trackersEmpty),
         imageName: AppImages.emptyViewImage
     )
 
@@ -113,12 +113,12 @@ final class TrackersViewController: UIViewController {
             break
         case .noTrackers:
             emptyView.configure(
-                title: "Что будем отслеживать?",
+                title: String(localized: .trackersEmpty),
                 imageName: AppImages.emptyViewImage
             )
         case .nothingFound:
             emptyView.configure(
-                title: "Ничего не найдено",
+                title: String(localized: .trackersNothingFound),
                 imageName: AppImages.nothingFoundImage
             )
         }
@@ -202,7 +202,7 @@ final class TrackersViewController: UIViewController {
     private func setUpNavigationBar() {
         navigationController?.navigationBar.prefersLargeTitles = true
         navigationController?.navigationBar.tintColor = .blackDay
-        navigationItem.title = "Трекеры"
+        navigationItem.title = String(localized: .trackersTitle)
         navigationItem.largeTitleDisplayMode = .always
         navigationItem.searchController = searchController
         navigationItem.hidesSearchBarWhenScrolling = false
@@ -229,7 +229,7 @@ final class TrackersViewController: UIViewController {
             message: message,
             preferredStyle: .alert
         )
-        alert.addAction(UIAlertAction(title: "Ок", style: .default))
+        alert.addAction(UIAlertAction(title: String(localized: .commonOk), style: .default))
         present(alert, animated: true)
     }
 

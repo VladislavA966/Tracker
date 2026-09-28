@@ -5,13 +5,13 @@ final class NewCategoryViewController: UIViewController {
     var onDone: Bind<String>?
 
     private let textField = FormTextField()
-    private let doneButton = PrimaryButton(title: "Готово")
+    private let doneButton = PrimaryButton(title: String(localized: .commonDone))
 
     // MARK: - Lifecycle
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        navigationItem.title = "Новая категория"
+        navigationItem.title = String(localized: .newCategoryTitle)
         view.backgroundColor = .whiteDay
         setUpTextField()
         setUpDoneButton()
@@ -21,7 +21,7 @@ final class NewCategoryViewController: UIViewController {
     // MARK: - Setup
 
     private func setUpTextField() {
-        textField.placeholder = "Введите название категории"
+        textField.placeholder = String(localized: .newCategoryPlaceholder)
         textField.addTarget(
             self,
             action: #selector(onTextFieldChanged),

@@ -8,10 +8,10 @@ enum TrackerFilter: CaseIterable {
 
     var title: String {
         switch self {
-        case .all: "Все трекеры"
-        case .today: "Трекеры на сегодня"
-        case .completed: "Завершённые"
-        case .uncompleted: "Незавершённые"
+        case .all: String(localized: .filtersAll)
+        case .today: String(localized: .filtersToday)
+        case .completed: String(localized: .filtersCompleted)
+        case .uncompleted: String(localized: .filtersUncompleted)
         }
     }
 

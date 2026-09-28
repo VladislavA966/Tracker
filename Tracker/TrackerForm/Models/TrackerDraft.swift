@@ -19,7 +19,7 @@ struct TrackerDraft {
 
     var scheduleSubtitle: String? {
         guard !schedule.isEmpty else { return nil }
-        if schedule.count == WeekDay.allCases.count { return "Каждый день" }
+        if schedule.count == WeekDay.allCases.count { return String(localized: .formEveryDay) }
         return WeekDay.allCases
             .filter { schedule.contains($0) }
             .map { $0.shortTitle }

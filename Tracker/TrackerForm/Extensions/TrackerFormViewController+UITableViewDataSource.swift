@@ -26,7 +26,7 @@ extension TrackerFormViewController: UITableViewDataSource {
         cell.accessoryType = .disclosureIndicator
 
         var content = cell.defaultContentConfiguration()
-        content.text = option.rawValue
+        content.text = option.title
         content.textProperties.font = .ypRegular17
         content.secondaryTextProperties.font = .ypRegular17
         content.secondaryTextProperties.color = .ypGray

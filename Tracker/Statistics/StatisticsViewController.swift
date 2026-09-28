@@ -9,9 +9,9 @@ final class StatisticsViewController: UIViewController {
 
     private let viewModel: StatisticsViewModel
 
-    private let completedCard = StatisticCardView(title: "Трекеров завершено")
+    private let completedCard = StatisticCardView(title: String(localized: .statisticsCompleted))
     private let emptyView = EmptyView(
-        title: "Анализировать пока нечего",
+        title: String(localized: .statisticsEmpty),
         imageName: AppImages.statisticsEmptyImage
     )
 
@@ -57,7 +57,7 @@ final class StatisticsViewController: UIViewController {
 
     private func setUpNavigationBar() {
         navigationController?.navigationBar.prefersLargeTitles = true
-        navigationItem.title = "Статистика"
+        navigationItem.title = String(localized: .statisticsTitle)
         navigationItem.largeTitleDisplayMode = .always
     }
 

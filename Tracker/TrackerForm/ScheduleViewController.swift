@@ -15,7 +15,7 @@ final class ScheduleViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        navigationItem.title = "Расписание"
+        navigationItem.title = String(localized: .formSchedule)
         view.backgroundColor = .whiteDay
         setUpConfirmButton()
         setUpTableView()
@@ -29,7 +29,7 @@ final class ScheduleViewController: UIViewController {
         confirmButton.translatesAutoresizingMaskIntoConstraints = false
         confirmButton.backgroundColor = .blackDay
         confirmButton.titleLabel?.font = .ypMedium16
-        confirmButton.setTitle("Готово", for: .normal)
+        confirmButton.setTitle(String(localized: .commonDone), for: .normal)
         confirmButton.setTitleColor(.whiteDay, for: .normal)
         confirmButton.layer.cornerRadius = 16
         confirmButton.layer.masksToBounds = true

@@ -36,7 +36,7 @@ final class TrackersViewModel {
 
     private var completedIds: Set<UUID> = []
 
-    private static let pinnedCategoryTitle = "Закреплённые"
+    private static let pinnedCategoryTitle = String(localized: .trackersPinnedSection)
 
     // MARK: - Dependencies
     private let trackerStore: TrackerStore
@@ -153,7 +153,7 @@ final class TrackersViewModel {
         do {
             try recordStore.toggle(trackerId: tracker.id, on: currentDate)
         } catch {
-            onError?("Не удалось изменить отметку")
+            onError?(String(localized: .trackersErrorToggle))
         }
     }
 
@@ -161,7 +161,7 @@ final class TrackersViewModel {
         do {
             try trackerStore.setPinned(isPinned, forTrackerWithId: id)
         } catch {
-            onError?("Не удалось закрепить трекер")
+            onError?(String(localized: .trackersErrorPin))
         }
     }
 
@@ -169,7 +169,7 @@ final class TrackersViewModel {
         do {
             try trackerStore.deleteTracker(withId: id)
         } catch {
-            onError?("Не удалось удалить трекер")
+            onError?(String(localized: .trackersErrorDelete))
         }
     }
 
@@ -177,7 +177,7 @@ final class TrackersViewModel {
         do {
             try trackerStore.updateTracker(tracker, categoryTitle: categoryTitle)
         } catch {
-            onError?("Не удалось сохранить изменения")
+            onError?(String(localized: .trackersErrorUpdate))
         }
     }
 
@@ -185,7 +185,7 @@ final class TrackersViewModel {
         do {
             try trackerStore.addTracker(tracker, categoryTitle: categoryTitle)
         } catch {
-            onError?("Не удалось сохранить трекер")
+            onError?(String(localized: .trackersErrorSave))
             return
         }
 

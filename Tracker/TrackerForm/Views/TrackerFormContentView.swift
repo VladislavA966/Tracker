@@ -22,7 +22,7 @@ final class TrackerFormContentView: UIView {
     )
     let colorCollectionHeader = TrackerFormHeaderLabel(
         frame: .zero,
-        title: "Цвет"
+        title: String(localized: .formColor)
     )
 
     override init(frame: CGRect) {
