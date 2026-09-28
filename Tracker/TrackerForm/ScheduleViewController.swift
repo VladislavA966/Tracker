@@ -27,7 +27,7 @@ final class ScheduleViewController: UIViewController {
     private func setUpConfirmButton() {
         view.addSubview(confirmButton)
         confirmButton.translatesAutoresizingMaskIntoConstraints = false
-        confirmButton.backgroundColor = .black
+        confirmButton.backgroundColor = .blackDay
         confirmButton.titleLabel?.font = .ypMedium16
         confirmButton.setTitle("Готово", for: .normal)
         confirmButton.setTitleColor(.whiteDay, for: .normal)

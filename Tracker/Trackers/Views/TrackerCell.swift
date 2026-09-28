@@ -144,7 +144,7 @@ final class TrackerCell: UICollectionViewCell {
     private func setUpCounterLabel() {
         counterLabel.text = "0 дней"
         counterLabel.font = .ypMedium12
-        counterLabel.textColor = .label
+        counterLabel.textColor = .blackDay
     }
 
     private func setUpAddButton() {

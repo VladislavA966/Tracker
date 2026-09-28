@@ -9,16 +9,14 @@ final class TrackersViewController: UIViewController {
         collectionViewLayout: UICollectionViewFlowLayout()
     )
 
-    private lazy var datePicker: UIDatePicker = {
-        let picker = UIDatePicker()
-        picker.datePickerMode = .date
-        picker.preferredDatePickerStyle = .compact
-        picker.addTarget(
+    private lazy var dateButton: DateButton = {
+        let button = DateButton()
+        button.addTarget(
             self,
-            action: #selector(onDatePickerValueChanged(_:)),
-            for: .valueChanged
+            action: #selector(onDateButtonTapped),
+            for: .touchUpInside
         )
-        return picker
+        return button
     }()
 
     private lazy var searchController: UISearchController = {
@@ -88,8 +86,7 @@ final class TrackersViewController: UIViewController {
         }
 
         viewModel.onDateChange = { [weak self] date in
-            guard let self, self.datePicker.date != date else { return }
-            self.datePicker.setDate(date, animated: true)
+            self?.dateButton.setDate(date)
         }
 
         viewModel.onSearchQueryChange = { [weak self] query in
@@ -204,6 +201,7 @@ final class TrackersViewController: UIViewController {
 
     private func setUpNavigationBar() {
         navigationController?.navigationBar.prefersLargeTitles = true
+        navigationController?.navigationBar.tintColor = .blackDay
         navigationItem.title = "Трекеры"
         navigationItem.largeTitleDisplayMode = .always
         navigationItem.searchController = searchController
@@ -217,7 +215,8 @@ final class TrackersViewController: UIViewController {
             action: #selector(onTap)
         )
         navigationItem.leftBarButtonItem = addButton
-        let barButtonItem = UIBarButtonItem(customView: datePicker)
+        dateButton.setDate(viewModel.currentDate)
+        let barButtonItem = UIBarButtonItem(customView: dateButton)
         if #available(iOS 26.0, *) {
             barButtonItem.hidesSharedBackground = true
         }
@@ -264,8 +263,29 @@ final class TrackersViewController: UIViewController {
         )
     }
 
-    @objc private func onDatePickerValueChanged(_ sender: UIDatePicker) {
-        viewModel.dateChanged(to: sender.date)
+    @objc private func onDateButtonTapped() {
+        let pickerController = DatePickerViewController(
+            date: viewModel.currentDate
+        )
+        pickerController.onDateSelected = { [weak self] date in
+            self?.viewModel.dateChanged(to: date)
+            self?.dismiss(animated: true)
+        }
+        pickerController.modalPresentationStyle = .popover
+        pickerController.popoverPresentationController?.sourceItem = dateButton
+        pickerController.popoverPresentationController?.delegate = self
+        present(pickerController, animated: true)
+    }
+}
+
+// MARK: - UIPopoverPresentationControllerDelegate
+
+extension TrackersViewController: UIPopoverPresentationControllerDelegate {
+    func adaptivePresentationStyle(
+        for controller: UIPresentationController,
+        traitCollection: UITraitCollection
+    ) -> UIModalPresentationStyle {
+        .none
     }
 }
 

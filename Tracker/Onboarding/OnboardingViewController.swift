@@ -48,6 +48,7 @@ final class OnboardingViewController: UIPageViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        overrideUserInterfaceStyle = .light
         view.backgroundColor = .whiteDay
         dataSource = self
         delegate = self
