@@ -76,6 +76,16 @@ final class TrackersViewController: UIViewController {
         viewModel.viewDidLoad()
     }
 
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        AnalyticsService.shared.report(.open(.main))
+    }
+
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        AnalyticsService.shared.report(.close(.main))
+    }
+
     // MARK: - Bindings
     private func setUpBindings() {
         viewModel.onCategoriesChange = { [weak self] _ in
@@ -236,6 +246,7 @@ final class TrackersViewController: UIViewController {
     // MARK: - Actions
 
     @objc private func onTap() {
+        AnalyticsService.shared.report(.click(.addTrack, on: .main))
         presentTrackerForm(mode: .create)
     }
 
@@ -250,6 +261,7 @@ final class TrackersViewController: UIViewController {
     }
 
     @objc private func onFilterButtonTapped() {
+        AnalyticsService.shared.report(.click(.filter, on: .main))
         let filtersController = FiltersViewController(
             selectedFilter: viewModel.filter
         )
@@ -316,6 +328,7 @@ extension TrackersViewController: TrackerCellDelegate {
         guard let indexPath = trackersCollectionView.indexPath(for: cell)
         else { return }
 
+        AnalyticsService.shared.report(.click(.track, on: .main))
         viewModel.toggleTracker(
             inSection: indexPath.section,
             at: indexPath.item

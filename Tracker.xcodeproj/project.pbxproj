@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		A1B2C3D4E5F6070809000001 /* AppMetricaCore in Frameworks */ = {isa = PBXBuildFile; productRef = A1B2C3D4E5F6070809000002 /* AppMetricaCore */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		F28C5AC7301B0ADE002A6F28 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -65,6 +69,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A1B2C3D4E5F6070809000001 /* AppMetricaCore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -125,6 +130,7 @@
 			);
 			name = Tracker;
 			packageProductDependencies = (
+				A1B2C3D4E5F6070809000002 /* AppMetricaCore */,
 			);
 			productName = Tracker;
 			productReference = F28C5AB0301B0ADC002A6F28 /* Tracker.app */;
@@ -209,6 +215,9 @@
 			);
 			mainGroup = F28C5AA7301B0ADC002A6F28;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				A1B2C3D4E5F6070809000003 /* XCRemoteSwiftPackageReference "appmetrica-sdk-ios" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = F28C5AB1301B0ADC002A6F28 /* Products */;
 			projectDirPath = "";
@@ -590,6 +599,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		A1B2C3D4E5F6070809000003 /* XCRemoteSwiftPackageReference "appmetrica-sdk-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/appmetrica/appmetrica-sdk-ios";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 6.7.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		A1B2C3D4E5F6070809000002 /* AppMetricaCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A1B2C3D4E5F6070809000003 /* XCRemoteSwiftPackageReference "appmetrica-sdk-ios" */;
+			productName = AppMetricaCore;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = F28C5AA8301B0ADC002A6F28 /* Project object */;
 }

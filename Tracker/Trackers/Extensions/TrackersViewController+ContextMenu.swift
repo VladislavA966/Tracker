@@ -26,12 +26,14 @@ extension TrackersViewController {
                 )
             }
             let edit = UIAction(title: String(localized: .commonEdit)) { _ in
+                AnalyticsService.shared.report(.click(.edit, on: .main))
                 self?.presentEditForm(for: tracker)
             }
             let delete = UIAction(
                 title: String(localized: .commonDelete),
                 attributes: .destructive
             ) { _ in
+                AnalyticsService.shared.report(.click(.delete, on: .main))
                 self?.confirmDeletion(of: tracker)
             }
             return UIMenu(children: [pin, edit, delete])
