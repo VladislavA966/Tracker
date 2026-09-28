@@ -9,28 +9,47 @@ final class TrackersViewController: UIViewController {
         collectionViewLayout: UICollectionViewFlowLayout()
     )
 
-    private lazy var datePicker: UIDatePicker = {
-        let picker = UIDatePicker()
-        picker.datePickerMode = .date
-        picker.preferredDatePickerStyle = .compact
-        picker.addTarget(
+    private lazy var dateButton: DateButton = {
+        let button = DateButton()
+        button.addTarget(
             self,
-            action: #selector(onDatePickerValueChanged(_:)),
-            for: .valueChanged
+            action: #selector(onDateButtonTapped),
+            for: .touchUpInside
         )
-        return picker
+        return button
     }()
 
     private lazy var searchController: UISearchController = {
         let controller = UISearchController(searchResultsController: nil)
         controller.searchResultsUpdater = self
         controller.obscuresBackgroundDuringPresentation = false
-        controller.searchBar.placeholder = "Поиск"
+        controller.searchBar.placeholder = String(localized: .trackersSearchPlaceholder)
         return controller
     }()
 
+    private enum Layout {
+        static let filterButtonSize = CGSize(width: 114, height: 50)
+        static let filterButtonBottomInset: CGFloat = 16
+        static let filterButtonTopGap: CGFloat = 16
+    }
+
+    private lazy var filterButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setTitle(String(localized: .trackersFiltersButton), for: .normal)
+        button.setTitleColor(.white, for: .normal)
+        button.titleLabel?.font = .ypRegular17
+        button.backgroundColor = .ypBlue
+        button.layer.cornerRadius = 16
+        button.addTarget(
+            self,
+            action: #selector(onFilterButtonTapped),
+            for: .touchUpInside
+        )
+        return button
+    }()
+
     private let emptyView = EmptyView(
-        title: "Что будем отслеживать?",
+        title: String(localized: .trackersEmpty),
         imageName: AppImages.emptyViewImage
     )
 
@@ -53,8 +72,19 @@ final class TrackersViewController: UIViewController {
         setUpNavigationBar()
         setUpEmptyView()
         setUpCollectionView()
+        setUpFilterButton()
         setUpBindings()
         viewModel.viewDidLoad()
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        AnalyticsService.shared.report(.open(.main))
+    }
+
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        AnalyticsService.shared.report(.close(.main))
     }
 
     // MARK: - Bindings
@@ -63,11 +93,11 @@ final class TrackersViewController: UIViewController {
             guard let self else { return }
             self.trackersCollectionView.reloadData()
             self.updateEmptyState()
+            self.updateFilterButton()
         }
 
         viewModel.onDateChange = { [weak self] date in
-            guard let self, self.datePicker.date != date else { return }
-            self.datePicker.setDate(date, animated: true)
+            self?.dateButton.setDate(date)
         }
 
         viewModel.onSearchQueryChange = { [weak self] query in
@@ -85,12 +115,57 @@ final class TrackersViewController: UIViewController {
     // MARK: - Setup
 
     private func updateEmptyState() {
-        let isEmpty = viewModel.isEmpty
-        emptyView.isHidden = !isEmpty
-        trackersCollectionView.isHidden = isEmpty
+        let state = viewModel.emptyState
+        emptyView.isHidden = state == .none
+        trackersCollectionView.isHidden = state != .none
+
+        switch state {
+        case .none:
+            break
+        case .noTrackers:
+            emptyView.configure(
+                title: String(localized: .trackersEmpty),
+                imageName: AppImages.emptyViewImage
+            )
+        case .nothingFound:
+            emptyView.configure(
+                title: String(localized: .trackersNothingFound),
+                imageName: AppImages.nothingFoundImage
+            )
+        }
+    }
+
+    private func updateFilterButton() {
+        filterButton.isHidden = viewModel.isFilterButtonHidden
+    }
+
+    private func setUpFilterButton() {
+        view.addSubview(filterButton)
+        filterButton.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            filterButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            filterButton.bottomAnchor.constraint(
+                equalTo: view.safeAreaLayoutGuide.bottomAnchor,
+                constant: -Layout.filterButtonBottomInset
+            ),
+            filterButton.widthAnchor.constraint(
+                equalToConstant: Layout.filterButtonSize.width
+            ),
+            filterButton.heightAnchor.constraint(
+                equalToConstant: Layout.filterButtonSize.height
+            ),
+        ])
+
+        let bottomInset =
+            Layout.filterButtonSize.height
+            + Layout.filterButtonBottomInset
+            + Layout.filterButtonTopGap
+        trackersCollectionView.contentInset.bottom = bottomInset
+        trackersCollectionView.verticalScrollIndicatorInsets.bottom = bottomInset
     }
 
     private func setUpCollectionView() {
+        trackersCollectionView.backgroundColor = .clear
         trackersCollectionView.delegate = self
         trackersCollectionView.dataSource = self
         view.addSubview(trackersCollectionView)
@@ -132,7 +207,8 @@ final class TrackersViewController: UIViewController {
 
     private func setUpNavigationBar() {
         navigationController?.navigationBar.prefersLargeTitles = true
-        navigationItem.title = "Трекеры"
+        navigationController?.navigationBar.tintColor = .blackDay
+        navigationItem.title = String(localized: .trackersTitle)
         navigationItem.largeTitleDisplayMode = .always
         navigationItem.searchController = searchController
         navigationItem.hidesSearchBarWhenScrolling = false
@@ -145,7 +221,8 @@ final class TrackersViewController: UIViewController {
             action: #selector(onTap)
         )
         navigationItem.leftBarButtonItem = addButton
-        let barButtonItem = UIBarButtonItem(customView: datePicker)
+        dateButton.setDate(viewModel.currentDate)
+        let barButtonItem = UIBarButtonItem(customView: dateButton)
         if #available(iOS 26.0, *) {
             barButtonItem.hidesSharedBackground = true
         }
@@ -158,36 +235,85 @@ final class TrackersViewController: UIViewController {
             message: message,
             preferredStyle: .alert
         )
-        alert.addAction(UIAlertAction(title: "Ок", style: .default))
+        alert.addAction(UIAlertAction(title: String(localized: .commonOk), style: .default))
         present(alert, animated: true)
     }
 
     // MARK: - Actions
 
     @objc private func onTap() {
-        let addNewHabitController = AddTrackerViewController()
-        addNewHabitController.delegate = self
+        AnalyticsService.shared.report(.click(.addTrack, on: .main))
+        presentTrackerForm(mode: .create)
+    }
+
+    func presentTrackerForm(mode: TrackerFormViewController.Mode) {
+        let trackerFormController = TrackerFormViewController(mode: mode)
+        trackerFormController.delegate = self
         let navigationController = UINavigationController(
-            rootViewController: addNewHabitController
+            rootViewController: trackerFormController
         )
         navigationController.modalPresentationStyle = .pageSheet
         present(navigationController, animated: true)
     }
 
-    @objc private func onDatePickerValueChanged(_ sender: UIDatePicker) {
-        viewModel.dateChanged(to: sender.date)
+    @objc private func onFilterButtonTapped() {
+        AnalyticsService.shared.report(.click(.filter, on: .main))
+        let filtersController = FiltersViewController(
+            selectedFilter: viewModel.filter
+        )
+        filtersController.onSelect = { [weak self] filter in
+            self?.viewModel.selectFilter(filter)
+            self?.dismiss(animated: true)
+        }
+        present(
+            UINavigationController(rootViewController: filtersController),
+            animated: true
+        )
+    }
+
+    @objc private func onDateButtonTapped() {
+        let pickerController = DatePickerViewController(
+            date: viewModel.currentDate
+        )
+        pickerController.onDateSelected = { [weak self] date in
+            self?.viewModel.dateChanged(to: date)
+            self?.dismiss(animated: true)
+        }
+        pickerController.modalPresentationStyle = .popover
+        pickerController.popoverPresentationController?.sourceItem = dateButton
+        pickerController.popoverPresentationController?.delegate = self
+        present(pickerController, animated: true)
     }
 }
 
-// MARK: - AddTrackerViewControllerDelegate
+// MARK: - UIPopoverPresentationControllerDelegate
 
-extension TrackersViewController: AddTrackerViewControllerDelegate {
-    func addTrackerViewController(
-        _ controller: AddTrackerViewController,
+extension TrackersViewController: UIPopoverPresentationControllerDelegate {
+    func adaptivePresentationStyle(
+        for controller: UIPresentationController,
+        traitCollection: UITraitCollection
+    ) -> UIModalPresentationStyle {
+        .none
+    }
+}
+
+// MARK: - TrackerFormViewControllerDelegate
+
+extension TrackersViewController: TrackerFormViewControllerDelegate {
+    func trackerFormViewController(
+        _ controller: TrackerFormViewController,
         didCreate tracker: Tracker,
         categoryTitle: String
     ) {
         viewModel.addTracker(tracker, categoryTitle: categoryTitle)
+    }
+
+    func trackerFormViewController(
+        _ controller: TrackerFormViewController,
+        didUpdate tracker: Tracker,
+        categoryTitle: String
+    ) {
+        viewModel.updateTracker(tracker, categoryTitle: categoryTitle)
     }
 }
 
@@ -198,6 +324,7 @@ extension TrackersViewController: TrackerCellDelegate {
         guard let indexPath = trackersCollectionView.indexPath(for: cell)
         else { return }
 
+        AnalyticsService.shared.report(.click(.track, on: .main))
         viewModel.toggleTracker(
             inSection: indexPath.section,
             at: indexPath.item

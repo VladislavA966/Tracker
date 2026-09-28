@@ -21,7 +21,7 @@ final class OnboardingViewController: UIPageViewController {
     }()
 
     private lazy var actionButton: PrimaryButton = {
-        let button = PrimaryButton(title: "Вот это технологии!")
+        let button = PrimaryButton(title: String(localized: .onboardingButton))
         button.addTarget(
             self,
             action: #selector(onActionButtonTapped),
@@ -48,6 +48,7 @@ final class OnboardingViewController: UIPageViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        overrideUserInterfaceStyle = .light
         view.backgroundColor = .whiteDay
         dataSource = self
         delegate = self

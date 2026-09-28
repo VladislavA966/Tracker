@@ -18,9 +18,13 @@ final class TrackerCell: UICollectionViewCell {
 
     weak var delegate: TrackerCellDelegate?
 
-    private let cardView = UIStackView()
+    var previewView: UIView { cardView }
+
+    private let cardView = UIView()
+    private let cardStack = UIStackView()
     private let emojiLabel = UILabel()
     private let titleLabel = UILabel()
+    private let pinImageView = UIImageView()
     private let footerView = UIStackView()
     private let counterLabel = UILabel()
     private let addButton = UIButton(type: .system)
@@ -31,6 +35,7 @@ final class TrackerCell: UICollectionViewCell {
         setUpCardView()
         setUpEmojiLabel()
         setUpTitleLabel()
+        setUpPinImageView()
         setUpFooterView()
         setUpCounterLabel()
         setUpAddButton()
@@ -46,7 +51,8 @@ final class TrackerCell: UICollectionViewCell {
         cardView.backgroundColor = tracker.color
         emojiLabel.text = tracker.emoji
         titleLabel.text = tracker.name
-        counterLabel.text = Self.daysTitle(model.completedDays)
+        pinImageView.isHidden = !tracker.isPinned
+        counterLabel.text = String(localized: .daysCount(model.completedDays))
 
         addButton.backgroundColor = tracker.color
         addButton.alpha = model.isCompleted ? 0.3 : 1
@@ -68,31 +74,27 @@ final class TrackerCell: UICollectionViewCell {
     private func setUpHierarchy() {
         contentView.addSubview(cardView)
         contentView.addSubview(footerView)
-        cardView.addArrangedSubview(emojiLabel)
-        cardView.addArrangedSubview(titleLabel)
+        cardView.addSubview(cardStack)
+        cardView.addSubview(pinImageView)
+        cardStack.addArrangedSubview(emojiLabel)
+        cardStack.addArrangedSubview(titleLabel)
         footerView.addArrangedSubview(counterLabel)
         footerView.addArrangedSubview(addButton)
     }
 
     private func setUpCardView() {
         cardView.translatesAutoresizingMaskIntoConstraints = false
-        cardView.axis = .vertical
-        cardView.alignment = .leading
-        cardView.distribution = .equalSpacing
         cardView.layer.cornerRadius = Layout.cardCornerRadius
         cardView.clipsToBounds = true
         cardView.backgroundColor = .colorSelection5
-        cardView.isLayoutMarginsRelativeArrangement = true
-        cardView.layoutMargins = UIEdgeInsets(
-            top: Layout.padding,
-            left: Layout.padding,
-            bottom: Layout.padding,
-            right: Layout.padding
-        )
+
+        cardStack.translatesAutoresizingMaskIntoConstraints = false
+        cardStack.axis = .vertical
+        cardStack.alignment = .leading
+        cardStack.distribution = .equalSpacing
     }
 
     private func setUpEmojiLabel() {
-        emojiLabel.text = "👌"
         emojiLabel.font = .systemFont(ofSize: 14)
         emojiLabel.textAlignment = .center
         emojiLabel.backgroundColor = .white.withAlphaComponent(0.3)
@@ -101,10 +103,20 @@ final class TrackerCell: UICollectionViewCell {
     }
 
     private func setUpTitleLabel() {
-        titleLabel.text = "Какая то прикольная привычка"
         titleLabel.font = .ypMedium12
         titleLabel.textColor = .white
         titleLabel.numberOfLines = 2
+    }
+
+    private func setUpPinImageView() {
+        pinImageView.translatesAutoresizingMaskIntoConstraints = false
+        pinImageView.image = UIImage(
+            systemName: "pin.fill",
+            withConfiguration: UIImage.SymbolConfiguration(pointSize: 10)
+        )
+        pinImageView.tintColor = .white
+        pinImageView.contentMode = .center
+        pinImageView.isHidden = true
     }
 
     private func setUpFooterView() {
@@ -122,9 +134,8 @@ final class TrackerCell: UICollectionViewCell {
     }
 
     private func setUpCounterLabel() {
-        counterLabel.text = "0 дней"
         counterLabel.font = .ypMedium12
-        counterLabel.textColor = .label
+        counterLabel.textColor = .blackDay
     }
 
     private func setUpAddButton() {
@@ -161,6 +172,23 @@ final class TrackerCell: UICollectionViewCell {
                 equalToConstant: Layout.cardHeight
             ),
 
+            cardStack.topAnchor.constraint(
+                equalTo: cardView.topAnchor,
+                constant: Layout.padding
+            ),
+            cardStack.leadingAnchor.constraint(
+                equalTo: cardView.leadingAnchor,
+                constant: Layout.padding
+            ),
+            cardStack.trailingAnchor.constraint(
+                equalTo: cardView.trailingAnchor,
+                constant: -Layout.padding
+            ),
+            cardStack.bottomAnchor.constraint(
+                equalTo: cardView.bottomAnchor,
+                constant: -Layout.padding
+            ),
+
             emojiLabel.widthAnchor.constraint(
                 equalToConstant: Layout.emojiSize
             ),
@@ -168,8 +196,21 @@ final class TrackerCell: UICollectionViewCell {
                 equalToConstant: Layout.emojiSize
             ),
 
-            titleLabel.widthAnchor.constraint(
-                equalTo: cardView.layoutMarginsGuide.widthAnchor
+            titleLabel.widthAnchor.constraint(equalTo: cardStack.widthAnchor),
+
+            pinImageView.topAnchor.constraint(
+                equalTo: cardView.topAnchor,
+                constant: Layout.padding
+            ),
+            pinImageView.trailingAnchor.constraint(
+                equalTo: cardView.trailingAnchor,
+                constant: -4
+            ),
+            pinImageView.widthAnchor.constraint(
+                equalToConstant: Layout.emojiSize
+            ),
+            pinImageView.heightAnchor.constraint(
+                equalToConstant: Layout.emojiSize
             ),
 
             footerView.topAnchor.constraint(
@@ -199,14 +240,5 @@ final class TrackerCell: UICollectionViewCell {
 
     @objc private func addButtonTapped() {
         delegate?.trackerCellDidTapPlus(self)
-    }
-
-    private static func daysTitle(_ count: Int) -> String {
-        if (11...14).contains(count % 100) { return "\(count) дней" }
-        switch count % 10 {
-        case 1: return "\(count) день"
-        case 2...4: return "\(count) дня"
-        default: return "\(count) дней"
-        }
     }
 }

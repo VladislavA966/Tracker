@@ -20,7 +20,6 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         self.dependencies = dependencies
 
         window = UIWindow(windowScene: scene)
-        dependencies.hasSeenOnboarding = false
         window?.rootViewController =
             dependencies.hasSeenOnboarding
             ? makeMainScreen()
@@ -45,7 +44,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let trackersViewController = TrackersViewController(
             viewModel: dependencies.makeTrackersViewModel()
         )
-        let statisticsViewController = StatisticsViewController()
+        let statisticsViewController = StatisticsViewController(
+            viewModel: dependencies.makeStatisticsViewModel()
+        )
 
         return TabBarViewController(
             trackersViewController: trackersViewController,

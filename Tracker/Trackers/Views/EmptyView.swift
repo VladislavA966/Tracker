@@ -6,8 +6,7 @@ final class EmptyView: UIStackView {
 
     init(title: String, imageName: String) {
         super.init(frame: .zero)
-        imageView.image = UIImage(named: imageName)
-        label.text = title
+        configure(title: title, imageName: imageName)
         label.font = .ypMedium12
         label.textAlignment = .center
         addArrangedSubview(imageView)
@@ -15,6 +14,11 @@ final class EmptyView: UIStackView {
         axis = .vertical
         alignment = .center
         spacing = 8
+    }
+
+    func configure(title: String, imageName: String) {
+        imageView.image = UIImage(named: imageName)
+        label.text = title
     }
 
     required init(coder: NSCoder) {

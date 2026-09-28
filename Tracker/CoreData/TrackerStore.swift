@@ -10,6 +10,7 @@ final class TrackerStore: NSObject {
 
     private let context: NSManagedObjectContext
     private let categoryStore: TrackerCategoryStore
+    private var contextObserver: NSObjectProtocol?
 
     private lazy var fetchedResultsController:
         NSFetchedResultsController<TrackerCoreData> = {
@@ -49,19 +50,61 @@ final class TrackerStore: NSObject {
         self.context = context
         self.categoryStore = categoryStore
         super.init()
+        observeCategoryChanges()
+    }
+
+    deinit {
+        if let contextObserver {
+            NotificationCenter.default.removeObserver(contextObserver)
+        }
     }
 
     func addTracker(_ tracker: Tracker, categoryTitle: String) throws {
         let entity = TrackerCoreData(context: context)
         entity.id = tracker.id
+        entity.createdAt = Date()
+        try fill(entity, with: tracker, categoryTitle: categoryTitle)
+
+        try context.saveIfNeeded()
+    }
+
+    func updateTracker(_ tracker: Tracker, categoryTitle: String) throws {
+        guard let entity = try entity(withId: tracker.id) else { return }
+        try fill(entity, with: tracker, categoryTitle: categoryTitle)
+
+        try context.saveIfNeeded()
+    }
+
+    func setPinned(_ isPinned: Bool, forTrackerWithId id: UUID) throws {
+        guard let entity = try entity(withId: id) else { return }
+        entity.isPinned = isPinned
+        try context.saveIfNeeded()
+    }
+
+    func deleteTracker(withId id: UUID) throws {
+        guard let entity = try entity(withId: id) else { return }
+        context.delete(entity)
+        try context.saveIfNeeded()
+    }
+
+    private func fill(
+        _ entity: TrackerCoreData,
+        with tracker: Tracker,
+        categoryTitle: String
+    ) throws {
         entity.name = tracker.name
         entity.emoji = tracker.emoji
         entity.colorHex = tracker.color.hexString
         entity.schedule = encode(tracker.schedule)
-        entity.createdAt = Date()
+        entity.isPinned = tracker.isPinned
         entity.category = try categoryStore.category(withTitle: categoryTitle)
+    }
 
-        try CoreDataStack.shared.saveContext()
+    private func entity(withId id: UUID) throws -> TrackerCoreData? {
+        let request = TrackerCoreData.fetchRequest()
+        request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
+        request.fetchLimit = 1
+        return try context.fetch(request).first
     }
 
     private func tracker(from entity: TrackerCoreData) -> Tracker? {
@@ -80,7 +123,8 @@ final class TrackerStore: NSObject {
             name: name,
             color: color,
             emoji: emoji,
-            schedule: decode(entity.schedule)
+            schedule: decode(entity.schedule),
+            isPinned: entity.isPinned
         )
     }
 
@@ -98,6 +142,30 @@ final class TrackerStore: NSObject {
         return Set(
             WeekDay.allCases.filter { weekdays.contains($0.calendarWeekday) }
         )
+    }
+
+    private func observeCategoryChanges() {
+        contextObserver = NotificationCenter.default.addObserver(
+            forName: .NSManagedObjectContextObjectsDidChange,
+            object: context,
+            queue: .main
+        ) { [weak self] notification in
+            let updated =
+                notification.userInfo?[NSUpdatedObjectsKey]
+                as? Set<NSManagedObject> ?? []
+            guard updated.contains(where: { $0 is TrackerCategoryCoreData })
+            else { return }
+            self?.refetch()
+        }
+    }
+
+    private func refetch() {
+        do {
+            try fetchedResultsController.performFetch()
+            delegate?.trackerStoreDidChangeContent(self)
+        } catch {
+            assertionFailure("Не удалось перезагрузить трекеры: \(error)")
+        }
     }
 
     func start() {

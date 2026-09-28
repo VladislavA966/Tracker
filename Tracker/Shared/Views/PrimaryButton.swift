@@ -10,6 +10,7 @@ final class PrimaryButton: UIButton {
         super.init(frame: .zero)
         setTitle(title, for: .normal)
         setTitleColor(.whiteDay, for: .normal)
+        setTitleColor(.white, for: .disabled)
         titleLabel?.font = .ypMedium16
         layer.cornerRadius = 16
         heightAnchor.constraint(equalToConstant: 60).isActive = true

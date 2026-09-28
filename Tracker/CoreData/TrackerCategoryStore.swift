@@ -41,11 +41,7 @@ final class TrackerCategoryStore: NSObject {
     }
 
     func category(withTitle title: String) throws -> TrackerCategoryCoreData {
-        let request = TrackerCategoryCoreData.fetchRequest()
-        request.predicate = NSPredicate(format: "title == %@", title)
-        request.fetchLimit = 1
-
-        if let existing = try context.fetch(request).first {
+        if let existing = try existingCategory(withTitle: title) {
             return existing
         }
 
@@ -67,7 +63,33 @@ final class TrackerCategoryStore: NSObject {
         let category = TrackerCategoryCoreData(context: context)
         category.title = title
         category.createdAt = Date()
-        try save()
+        try context.saveIfNeeded()
+    }
+
+    func renameCategory(from oldTitle: String, to newTitle: String) throws {
+        let newTitle = newTitle.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !newTitle.isEmpty else {
+            throw TrackerCategoryStoreError.emptyTitle
+        }
+        let isSameTitle =
+            newTitle.caseInsensitiveCompare(oldTitle) == .orderedSame
+        guard try isSameTitle || !titleExists(newTitle) else {
+            throw TrackerCategoryStoreError.duplicateTitle
+        }
+        guard let category = try existingCategory(withTitle: oldTitle) else {
+            return
+        }
+
+        category.title = newTitle
+        try context.saveIfNeeded()
+    }
+
+    func deleteCategory(withTitle title: String) throws {
+        guard let category = try existingCategory(withTitle: title) else {
+            return
+        }
+        context.delete(category)
+        try context.saveIfNeeded()
     }
 
     func titleExists(_ title: String) throws -> Bool {
@@ -77,15 +99,15 @@ final class TrackerCategoryStore: NSObject {
         return try context.count(for: request) > 0
     }
 
-    private func save() throws {
-        guard context.hasChanges else { return }
-        do {
-            try context.save()
-        } catch {
-            context.rollback()
-            throw error
-        }
+    private func existingCategory(
+        withTitle title: String
+    ) throws -> TrackerCategoryCoreData? {
+        let request = TrackerCategoryCoreData.fetchRequest()
+        request.predicate = NSPredicate(format: "title == %@", title)
+        request.fetchLimit = 1
+        return try context.fetch(request).first
     }
+
 
     func start() {
         do {

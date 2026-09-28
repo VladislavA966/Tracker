@@ -76,7 +76,7 @@ final class TrackerRecordStore: NSObject {
             record.tracker = try tracker(withId: trackerId)
         }
 
-        try CoreDataStack.shared.saveContext()
+        try context.saveIfNeeded()
     }
 
     private func tracker(withId id: UUID) throws -> TrackerCoreData? {

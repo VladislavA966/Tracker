@@ -17,6 +17,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         didFinishLaunchingWithOptions launchOptions: [UIApplication
             .LaunchOptionsKey: Any]?
     ) -> Bool {
+        AnalyticsService.shared.activate(apiKey: AppConstants.appMetricaAPIKey)
         return true
     }
 

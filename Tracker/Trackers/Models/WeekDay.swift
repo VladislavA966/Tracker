@@ -10,27 +10,13 @@ enum WeekDay: CaseIterable {
         sunday
 
     var fullTitle: String {
-        switch self {
-        case .monday: "Понедельник"
-        case .tuesday: "Вторник"
-        case .wednesday: "Среда"
-        case .thursday: "Четверг"
-        case .friday: "Пятница"
-        case .saturday: "Суббота"
-        case .sunday: "Воскресенье"
-        }
+        Calendar.current.standaloneWeekdaySymbols[calendarWeekday - 1]
+            .capitalized
     }
 
     var shortTitle: String {
-        switch self {
-        case .monday: "Пн"
-        case .tuesday: "Вт"
-        case .wednesday: "Ср"
-        case .thursday: "Чт"
-        case .friday: "Пт"
-        case .saturday: "Сб"
-        case .sunday: "Вс"
-        }
+        Calendar.current.shortStandaloneWeekdaySymbols[calendarWeekday - 1]
+            .capitalized
     }
 
     var calendarWeekday: Int {

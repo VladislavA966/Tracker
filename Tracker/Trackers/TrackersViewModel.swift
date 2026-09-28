@@ -3,6 +3,12 @@ import Foundation
 
 typealias Bind<T> = (T) -> Void
 
+enum TrackersEmptyState {
+    case none
+    case noTrackers
+    case nothingFound
+}
+
 final class TrackersViewModel {
 
     // MARK: - Bindings (ViewModel -> View)
@@ -24,7 +30,13 @@ final class TrackersViewModel {
         didSet { onSearchQueryChange?(searchQuery) }
     }
 
+    private(set) var filter: TrackerFilter = .all
+
+    private(set) var hasTrackersOnDate = false
+
     private var completedIds: Set<UUID> = []
+
+    private static let pinnedCategoryTitle = String(localized: .trackersPinnedSection)
 
     // MARK: - Dependencies
     private let trackerStore: TrackerStore
@@ -32,17 +44,24 @@ final class TrackersViewModel {
 
     init(
         trackerStore: TrackerStore = TrackerStore(),
-        recordStore: TrackerRecordStore = TrackerRecordStore()
+        recordStore: TrackerRecordStore = TrackerRecordStore(),
+        currentDate: Date = Date()
     ) {
         self.trackerStore = trackerStore
         self.recordStore = recordStore
+        self.currentDate = currentDate
         trackerStore.delegate = self
         recordStore.delegate = self
     }
 
     // MARK: - Derived state
 
-    var isEmpty: Bool { visibleCategories.isEmpty }
+    var emptyState: TrackersEmptyState {
+        guard visibleCategories.isEmpty else { return .none }
+        return hasTrackersOnDate ? .nothingFound : .noTrackers
+    }
+
+    var isFilterButtonHidden: Bool { !hasTrackersOnDate }
 
     var numberOfSections: Int { visibleCategories.count }
 
@@ -82,9 +101,19 @@ final class TrackersViewModel {
         return TrackerCellModel(
             tracker: tracker,
             isCompleted: completedIds.contains(tracker.id),
-            completedDays: recordStore.completedDays(for: tracker.id),
+            completedDays: completedDays(forTrackerWithId: tracker.id),
             isPlusEnabled: isPlusEnabled
         )
+    }
+
+    func categoryTitle(forTrackerWithId id: UUID) -> String? {
+        categories.first { category in
+            category.trackers.contains { $0.id == id }
+        }?.headerTitle
+    }
+
+    func completedDays(forTrackerWithId id: UUID) -> Int {
+        recordStore.completedDays(for: id)
     }
 
     // MARK: - Intents (View -> ViewModel)
@@ -98,6 +127,17 @@ final class TrackersViewModel {
     func dateChanged(to date: Date) {
         guard currentDate != date else { return }
         currentDate = date
+        reload()
+    }
+
+    func selectFilter(_ newFilter: TrackerFilter) {
+        switch newFilter {
+        case .today:
+            filter = .all
+            currentDate = Date()
+        case .all, .completed, .uncompleted:
+            filter = newFilter
+        }
         reload()
     }
 
@@ -115,7 +155,31 @@ final class TrackersViewModel {
         do {
             try recordStore.toggle(trackerId: tracker.id, on: currentDate)
         } catch {
-            onError?("Не удалось изменить отметку")
+            onError?(String(localized: .trackersErrorToggle))
+        }
+    }
+
+    func setPinned(_ isPinned: Bool, forTrackerWithId id: UUID) {
+        do {
+            try trackerStore.setPinned(isPinned, forTrackerWithId: id)
+        } catch {
+            onError?(String(localized: .trackersErrorPin))
+        }
+    }
+
+    func deleteTracker(withId id: UUID) {
+        do {
+            try trackerStore.deleteTracker(withId: id)
+        } catch {
+            onError?(String(localized: .trackersErrorDelete))
+        }
+    }
+
+    func updateTracker(_ tracker: Tracker, categoryTitle: String) {
+        do {
+            try trackerStore.updateTracker(tracker, categoryTitle: categoryTitle)
+        } catch {
+            onError?(String(localized: .trackersErrorUpdate))
         }
     }
 
@@ -123,7 +187,7 @@ final class TrackersViewModel {
         do {
             try trackerStore.addTracker(tracker, categoryTitle: categoryTitle)
         } catch {
-            onError?("Не удалось сохранить трекер")
+            onError?(String(localized: .trackersErrorSave))
             return
         }
 
@@ -136,32 +200,61 @@ final class TrackersViewModel {
 
     private func reload() {
         completedIds = recordStore.completedTrackerIds(on: currentDate)
+        hasTrackersOnDate = categories.contains { category in
+            category.trackers.contains(where: isScheduledOnCurrentDate)
+        }
         visibleCategories = makeVisibleCategories()
     }
 
+    private func isScheduledOnCurrentDate(_ tracker: Tracker) -> Bool {
+        guard let weekDay = WeekDay(date: currentDate) else { return false }
+        return tracker.schedule.isEmpty || tracker.schedule.contains(weekDay)
+    }
+
+    private func matchesFilter(_ tracker: Tracker) -> Bool {
+        switch filter {
+        case .all, .today: true
+        case .completed: completedIds.contains(tracker.id)
+        case .uncompleted: !completedIds.contains(tracker.id)
+        }
+    }
+
     private func makeVisibleCategories() -> [TrackerCategory] {
-        guard let weekDay = WeekDay(date: currentDate) else { return [] }
         let query =
             searchQuery
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .lowercased()
 
-        return categories.compactMap { category in
-            let trackers = category.trackers.filter { tracker in
-                let matchesDay =
-                    tracker.schedule.isEmpty
-                    || tracker.schedule.contains(weekDay)
-                let matchesQuery =
-                    query.isEmpty || tracker.name.lowercased().contains(query)
-                return matchesDay && matchesQuery
-            }
-            guard !trackers.isEmpty else { return nil }
-            return TrackerCategory(
+        let isVisible: (Tracker) -> Bool = { [self] tracker in
+            let matchesQuery =
+                query.isEmpty || tracker.name.lowercased().contains(query)
+            return isScheduledOnCurrentDate(tracker)
+                && matchesFilter(tracker)
+                && matchesQuery
+        }
+
+        let pinned = categories
+            .flatMap(\.trackers)
+            .filter { $0.isPinned && isVisible($0) }
+        let pinnedSection = TrackerCategory(
+            headerTitle: Self.pinnedCategoryTitle,
+            trackers: pinned
+        )
+
+        let regularSections = categories.map { category in
+            TrackerCategory(
                 headerTitle: category.headerTitle,
-                trackers: trackers
+                trackers: category.trackers.filter {
+                    !$0.isPinned && isVisible($0)
+                }
             )
         }
+
+        return ([pinnedSection] + regularSections).filter {
+            !$0.trackers.isEmpty
+        }
     }
+
 
     private func focusDate(for tracker: Tracker) {
         guard !tracker.schedule.isEmpty else { return }

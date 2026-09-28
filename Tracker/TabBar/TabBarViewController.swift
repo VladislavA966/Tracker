@@ -26,19 +26,22 @@ final class TabBarViewController: UITabBarController {
             rootViewController: trackersViewController
         )
         trackerNav.tabBarItem = UITabBarItem(
-            title: "Трекеры",
+            title: String(localized: .tabTrackers),
             image: UIImage(named: AppImages.trackerTab)?
                 .withRenderingMode(.alwaysTemplate),
             tag: 0
         )
-        statisticsViewController.tabBarItem = UITabBarItem(
-            title: "Статистика",
+        let statisticsNav = UINavigationController(
+            rootViewController: statisticsViewController
+        )
+        statisticsNav.tabBarItem = UITabBarItem(
+            title: String(localized: .tabStatistics),
             image: UIImage(named: AppImages.statisticsTab)?
                 .withRenderingMode(.alwaysTemplate),
             tag: 1
         )
 
-        viewControllers = [trackerNav, statisticsViewController]
+        viewControllers = [trackerNav, statisticsNav]
     }
 
     private func setUpAppearance() {
