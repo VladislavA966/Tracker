@@ -1,19 +1,37 @@
 import UIKit
 
-final class NewCategoryViewController: UIViewController {
+final class CategoryFormViewController: UIViewController {
+
+    enum Mode {
+        case create
+        case edit(title: String)
+    }
 
     var onDone: Bind<String>?
 
+    private let mode: Mode
+
     private let textField = FormTextField()
     private let doneButton = PrimaryButton(title: String(localized: .commonDone))
+
+    // MARK: - Init
+
+    init(mode: Mode = .create) {
+        self.mode = mode
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
 
     // MARK: - Lifecycle
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        navigationItem.title = String(localized: .newCategoryTitle)
         view.backgroundColor = .whiteDay
         setUpTextField()
+        applyMode()
         setUpDoneButton()
         updateDoneButtonState()
     }
@@ -21,7 +39,7 @@ final class NewCategoryViewController: UIViewController {
     // MARK: - Setup
 
     private func setUpTextField() {
-        textField.placeholder = String(localized: .newCategoryPlaceholder)
+        textField.placeholder = String(localized: .categoryFormPlaceholder)
         textField.addTarget(
             self,
             action: #selector(onTextFieldChanged),
@@ -68,6 +86,16 @@ final class NewCategoryViewController: UIViewController {
                 equalTo: view.safeAreaLayoutGuide.bottomAnchor
             ),
         ])
+    }
+
+    private func applyMode() {
+        switch mode {
+        case .create:
+            navigationItem.title = String(localized: .categoryFormNewTitle)
+        case .edit(let title):
+            navigationItem.title = String(localized: .categoryFormEditTitle)
+            textField.text = title
+        }
     }
 
     // MARK: - State

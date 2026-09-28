@@ -22,6 +22,10 @@ extension TrackerFormViewController: UITableViewDelegate {
             self.reloadOption(.category)
             self.dismiss(animated: true)
         }
+        viewModel.onSelectedCategoryUpdate = { [weak self] title in
+            self?.trackerDraft.category = title
+            self?.reloadOption(.category)
+        }
 
         present(
             UINavigationController(

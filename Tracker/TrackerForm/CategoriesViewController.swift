@@ -146,18 +146,52 @@ final class CategoriesViewController: UIViewController {
     // MARK: - Actions
 
     @objc private func onAddButtonTapped() {
-        let newCategoryViewController = NewCategoryViewController()
-        newCategoryViewController.onDone = { [weak self] title in
-            guard let self else { return }
-            self.viewModel.addCategory(title: title)
-            self.dismiss(animated: true)
+        presentCategoryForm(mode: .create) { [weak self] title in
+            self?.viewModel.addCategory(title: title)
+        }
+    }
+
+    private func presentCategoryForm(
+        mode: CategoryFormViewController.Mode,
+        onDone: @escaping (String) -> Void
+    ) {
+        let categoryFormController = CategoryFormViewController(mode: mode)
+        categoryFormController.onDone = { [weak self] title in
+            onDone(title)
+            self?.dismiss(animated: true)
         }
 
         let navigationController = UINavigationController(
-            rootViewController: newCategoryViewController
+            rootViewController: categoryFormController
         )
         navigationController.modalPresentationStyle = .pageSheet
         present(navigationController, animated: true)
+    }
+
+    fileprivate func editCategory(_ title: String) {
+        presentCategoryForm(mode: .edit(title: title)) { [weak self] newTitle in
+            self?.viewModel.renameCategory(from: title, to: newTitle)
+        }
+    }
+
+    fileprivate func confirmDeletion(of title: String) {
+        let alert = UIAlertController(
+            title: nil,
+            message: String(localized: .categoriesDeleteAlertMessage),
+            preferredStyle: .actionSheet
+        )
+        alert.addAction(
+            UIAlertAction(
+                title: String(localized: .commonDelete),
+                style: .destructive
+            ) { [weak self] _ in
+                self?.viewModel.deleteCategory(withTitle: title)
+            }
+        )
+        alert.addAction(
+            UIAlertAction(title: String(localized: .commonCancel), style: .cancel)
+        )
+        present(alert, animated: true)
     }
 }
 
@@ -199,5 +233,29 @@ extension CategoriesViewController: UITableViewDelegate {
         didSelectRowAt indexPath: IndexPath
     ) {
         viewModel.selectCategory(at: indexPath.row)
+    }
+
+    func tableView(
+        _ tableView: UITableView,
+        contextMenuConfigurationForRowAt indexPath: IndexPath,
+        point: CGPoint
+    ) -> UIContextMenuConfiguration? {
+        guard let title = viewModel.title(at: indexPath.row) else { return nil }
+
+        return UIContextMenuConfiguration(
+            identifier: indexPath as NSIndexPath,
+            previewProvider: nil
+        ) { [weak self] _ in
+            let edit = UIAction(title: String(localized: .commonEdit)) { _ in
+                self?.editCategory(title)
+            }
+            let delete = UIAction(
+                title: String(localized: .commonDelete),
+                attributes: .destructive
+            ) { _ in
+                self?.confirmDeletion(of: title)
+            }
+            return UIMenu(children: [edit, delete])
+        }
     }
 }

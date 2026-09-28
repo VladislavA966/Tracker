@@ -25,11 +25,11 @@ extension TrackersViewController {
                     forTrackerWithId: tracker.id
                 )
             }
-            let edit = UIAction(title: String(localized: .trackersMenuEdit)) { _ in
+            let edit = UIAction(title: String(localized: .commonEdit)) { _ in
                 self?.presentEditForm(for: tracker)
             }
             let delete = UIAction(
-                title: String(localized: .trackersMenuDelete),
+                title: String(localized: .commonDelete),
                 attributes: .destructive
             ) { _ in
                 self?.confirmDeletion(of: tracker)
@@ -98,7 +98,7 @@ extension TrackersViewController {
             preferredStyle: .actionSheet
         )
         alert.addAction(
-            UIAlertAction(title: String(localized: .trackersMenuDelete), style: .destructive) {
+            UIAlertAction(title: String(localized: .commonDelete), style: .destructive) {
                 [weak self] _ in
                 self?.viewModel.deleteTracker(withId: tracker.id)
             }

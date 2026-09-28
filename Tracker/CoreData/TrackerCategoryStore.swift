@@ -41,11 +41,7 @@ final class TrackerCategoryStore: NSObject {
     }
 
     func category(withTitle title: String) throws -> TrackerCategoryCoreData {
-        let request = TrackerCategoryCoreData.fetchRequest()
-        request.predicate = NSPredicate(format: "title == %@", title)
-        request.fetchLimit = 1
-
-        if let existing = try context.fetch(request).first {
+        if let existing = try existingCategory(withTitle: title) {
             return existing
         }
 
@@ -70,11 +66,46 @@ final class TrackerCategoryStore: NSObject {
         try save()
     }
 
+    func renameCategory(from oldTitle: String, to newTitle: String) throws {
+        let newTitle = newTitle.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !newTitle.isEmpty else {
+            throw TrackerCategoryStoreError.emptyTitle
+        }
+        let isSameTitle =
+            newTitle.caseInsensitiveCompare(oldTitle) == .orderedSame
+        guard try isSameTitle || !titleExists(newTitle) else {
+            throw TrackerCategoryStoreError.duplicateTitle
+        }
+        guard let category = try existingCategory(withTitle: oldTitle) else {
+            return
+        }
+
+        category.title = newTitle
+        try save()
+    }
+
+    func deleteCategory(withTitle title: String) throws {
+        guard let category = try existingCategory(withTitle: title) else {
+            return
+        }
+        context.delete(category)
+        try save()
+    }
+
     func titleExists(_ title: String) throws -> Bool {
         let request = TrackerCategoryCoreData.fetchRequest()
         request.predicate = NSPredicate(format: "title ==[cd] %@", title)
         request.fetchLimit = 1
         return try context.count(for: request) > 0
+    }
+
+    private func existingCategory(
+        withTitle title: String
+    ) throws -> TrackerCategoryCoreData? {
+        let request = TrackerCategoryCoreData.fetchRequest()
+        request.predicate = NSPredicate(format: "title == %@", title)
+        request.fetchLimit = 1
+        return try context.fetch(request).first
     }
 
     private func save() throws {

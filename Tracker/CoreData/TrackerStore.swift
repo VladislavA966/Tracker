@@ -10,6 +10,7 @@ final class TrackerStore: NSObject {
 
     private let context: NSManagedObjectContext
     private let categoryStore: TrackerCategoryStore
+    private var contextObserver: NSObjectProtocol?
 
     private lazy var fetchedResultsController:
         NSFetchedResultsController<TrackerCoreData> = {
@@ -49,6 +50,13 @@ final class TrackerStore: NSObject {
         self.context = context
         self.categoryStore = categoryStore
         super.init()
+        observeCategoryChanges()
+    }
+
+    deinit {
+        if let contextObserver {
+            NotificationCenter.default.removeObserver(contextObserver)
+        }
     }
 
     func addTracker(_ tracker: Tracker, categoryTitle: String) throws {
@@ -134,6 +142,30 @@ final class TrackerStore: NSObject {
         return Set(
             WeekDay.allCases.filter { weekdays.contains($0.calendarWeekday) }
         )
+    }
+
+    private func observeCategoryChanges() {
+        contextObserver = NotificationCenter.default.addObserver(
+            forName: .NSManagedObjectContextObjectsDidChange,
+            object: context,
+            queue: .main
+        ) { [weak self] notification in
+            let updated =
+                notification.userInfo?[NSUpdatedObjectsKey]
+                as? Set<NSManagedObject> ?? []
+            guard updated.contains(where: { $0 is TrackerCategoryCoreData })
+            else { return }
+            self?.refetch()
+        }
+    }
+
+    private func refetch() {
+        do {
+            try fetchedResultsController.performFetch()
+            delegate?.trackerStoreDidChangeContent(self)
+        } catch {
+            assertionFailure("Не удалось перезагрузить трекеры: \(error)")
+        }
     }
 
     func start() {
