@@ -6,6 +6,7 @@ final class AppDependencies {
     private let recordStore: TrackerRecordStore
     private let categoryStore: TrackerCategoryStore
     private let onboardingStorage: OnboardingStorage
+    private let context: NSManagedObjectContext
 
     var hasSeenOnboarding: Bool {
         get { onboardingStorage.hasSeenOnboarding }
@@ -23,6 +24,7 @@ final class AppDependencies {
         )
         recordStore = TrackerRecordStore(context: context)
         self.onboardingStorage = onboardingStorage
+        self.context = context
     }
 
     func makeCategoriesViewModel(
@@ -32,6 +34,10 @@ final class AppDependencies {
             categoryStore: categoryStore,
             selectedCategory: selectedCategory
         )
+    }
+
+    func makeStatisticsViewModel() -> StatisticsViewModel {
+        StatisticsViewModel(recordStore: TrackerRecordStore(context: context))
     }
 
     func makeTrackersViewModel() -> TrackersViewModel {

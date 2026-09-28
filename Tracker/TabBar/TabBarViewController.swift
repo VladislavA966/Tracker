@@ -31,14 +31,17 @@ final class TabBarViewController: UITabBarController {
                 .withRenderingMode(.alwaysTemplate),
             tag: 0
         )
-        statisticsViewController.tabBarItem = UITabBarItem(
+        let statisticsNav = UINavigationController(
+            rootViewController: statisticsViewController
+        )
+        statisticsNav.tabBarItem = UITabBarItem(
             title: "Статистика",
             image: UIImage(named: AppImages.statisticsTab)?
                 .withRenderingMode(.alwaysTemplate),
             tag: 1
         )
 
-        viewControllers = [trackerNav, statisticsViewController]
+        viewControllers = [trackerNav, statisticsNav]
     }
 
     private func setUpAppearance() {

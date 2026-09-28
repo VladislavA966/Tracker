@@ -45,7 +45,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let trackersViewController = TrackersViewController(
             viewModel: dependencies.makeTrackersViewModel()
         )
-        let statisticsViewController = StatisticsViewController()
+        let statisticsViewController = StatisticsViewController(
+            viewModel: dependencies.makeStatisticsViewModel()
+        )
 
         return TabBarViewController(
             trackersViewController: trackersViewController,
