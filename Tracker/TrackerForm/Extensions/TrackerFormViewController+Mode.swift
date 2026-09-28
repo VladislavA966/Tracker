@@ -19,7 +19,6 @@ extension TrackerFormViewController {
             }
         }
 
-        /// Новый id для создания, прежний — для редактирования.
         var trackerId: UUID {
             switch self {
             case .create: UUID()
@@ -82,7 +81,6 @@ extension TrackerFormViewController {
         if let index = emojis.firstIndex(of: tracker.emoji) {
             select(index, in: contentView.emojisCollectionView)
         }
-        // Цвет из базы и цвет из ассетов — разные объекты UIColor, сравниваем по hex.
         let hex = tracker.color.hexString
         if let index = colors.firstIndex(where: { $0.hexString == hex }) {
             select(index, in: contentView.colorsCollectionView)

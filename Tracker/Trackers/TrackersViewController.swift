@@ -36,6 +36,7 @@ final class TrackersViewController: UIViewController {
     private lazy var filterButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle(String(localized: .trackersFiltersButton), for: .normal)
+        button.setTitleColor(.white, for: .normal)
         button.titleLabel?.font = .ypRegular17
         button.backgroundColor = .ypBlue
         button.layer.cornerRadius = 16
@@ -136,14 +137,9 @@ final class TrackersViewController: UIViewController {
 
     private func updateFilterButton() {
         filterButton.isHidden = viewModel.isFilterButtonHidden
-        filterButton.setTitleColor(
-            viewModel.filter.isActive ? .ypRed : .white,
-            for: .normal
-        )
     }
 
     private func setUpFilterButton() {
-        // Добавляем после коллекции — кнопка рисуется поверх неё.
         view.addSubview(filterButton)
         filterButton.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
@@ -160,7 +156,6 @@ final class TrackersViewController: UIViewController {
             ),
         ])
 
-        // Оверскролл: последние карточки докручиваются выше кнопки.
         let bottomInset =
             Layout.filterButtonSize.height
             + Layout.filterButtonBottomInset
@@ -170,6 +165,7 @@ final class TrackersViewController: UIViewController {
     }
 
     private func setUpCollectionView() {
+        trackersCollectionView.backgroundColor = .clear
         trackersCollectionView.delegate = self
         trackersCollectionView.dataSource = self
         view.addSubview(trackersCollectionView)

@@ -65,26 +65,26 @@ final class TrackerStore: NSObject {
         entity.createdAt = Date()
         try fill(entity, with: tracker, categoryTitle: categoryTitle)
 
-        try CoreDataStack.shared.saveContext()
+        try context.saveIfNeeded()
     }
 
     func updateTracker(_ tracker: Tracker, categoryTitle: String) throws {
         guard let entity = try entity(withId: tracker.id) else { return }
         try fill(entity, with: tracker, categoryTitle: categoryTitle)
 
-        try CoreDataStack.shared.saveContext()
+        try context.saveIfNeeded()
     }
 
     func setPinned(_ isPinned: Bool, forTrackerWithId id: UUID) throws {
         guard let entity = try entity(withId: id) else { return }
         entity.isPinned = isPinned
-        try CoreDataStack.shared.saveContext()
+        try context.saveIfNeeded()
     }
 
     func deleteTracker(withId id: UUID) throws {
         guard let entity = try entity(withId: id) else { return }
         context.delete(entity)
-        try CoreDataStack.shared.saveContext()
+        try context.saveIfNeeded()
     }
 
     private func fill(

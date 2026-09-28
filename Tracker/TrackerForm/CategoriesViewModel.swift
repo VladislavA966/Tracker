@@ -69,7 +69,6 @@ final class CategoriesViewModel {
         let title = title.trimmingCharacters(in: .whitespacesAndNewlines)
         do {
             try categoryStore.addCategory(title: title)
-            selectedCategory = title
         } catch {
             onError?(message(for: error))
         }

@@ -63,7 +63,7 @@ final class TrackerCategoryStore: NSObject {
         let category = TrackerCategoryCoreData(context: context)
         category.title = title
         category.createdAt = Date()
-        try save()
+        try context.saveIfNeeded()
     }
 
     func renameCategory(from oldTitle: String, to newTitle: String) throws {
@@ -81,7 +81,7 @@ final class TrackerCategoryStore: NSObject {
         }
 
         category.title = newTitle
-        try save()
+        try context.saveIfNeeded()
     }
 
     func deleteCategory(withTitle title: String) throws {
@@ -89,7 +89,7 @@ final class TrackerCategoryStore: NSObject {
             return
         }
         context.delete(category)
-        try save()
+        try context.saveIfNeeded()
     }
 
     func titleExists(_ title: String) throws -> Bool {
@@ -108,15 +108,6 @@ final class TrackerCategoryStore: NSObject {
         return try context.fetch(request).first
     }
 
-    private func save() throws {
-        guard context.hasChanges else { return }
-        do {
-            try context.save()
-        } catch {
-            context.rollback()
-            throw error
-        }
-    }
 
     func start() {
         do {

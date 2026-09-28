@@ -67,7 +67,7 @@ extension TrackersViewController {
 
         let card = cell.previewView
         let parameters = UIPreviewParameters()
-        parameters.backgroundColor = .clear
+        parameters.backgroundColor = card.backgroundColor
         parameters.visiblePath = UIBezierPath(
             roundedRect: card.bounds,
             cornerRadius: card.layer.cornerRadius

@@ -20,7 +20,8 @@ final class TrackerCell: UICollectionViewCell {
 
     var previewView: UIView { cardView }
 
-    private let cardView = UIStackView()
+    private let cardView = UIView()
+    private let cardStack = UIStackView()
     private let emojiLabel = UILabel()
     private let titleLabel = UILabel()
     private let pinImageView = UIImageView()
@@ -73,28 +74,24 @@ final class TrackerCell: UICollectionViewCell {
     private func setUpHierarchy() {
         contentView.addSubview(cardView)
         contentView.addSubview(footerView)
-        cardView.addArrangedSubview(emojiLabel)
-        cardView.addArrangedSubview(titleLabel)
+        cardView.addSubview(cardStack)
         cardView.addSubview(pinImageView)
+        cardStack.addArrangedSubview(emojiLabel)
+        cardStack.addArrangedSubview(titleLabel)
         footerView.addArrangedSubview(counterLabel)
         footerView.addArrangedSubview(addButton)
     }
 
     private func setUpCardView() {
         cardView.translatesAutoresizingMaskIntoConstraints = false
-        cardView.axis = .vertical
-        cardView.alignment = .leading
-        cardView.distribution = .equalSpacing
         cardView.layer.cornerRadius = Layout.cardCornerRadius
         cardView.clipsToBounds = true
         cardView.backgroundColor = .colorSelection5
-        cardView.isLayoutMarginsRelativeArrangement = true
-        cardView.layoutMargins = UIEdgeInsets(
-            top: Layout.padding,
-            left: Layout.padding,
-            bottom: Layout.padding,
-            right: Layout.padding
-        )
+
+        cardStack.translatesAutoresizingMaskIntoConstraints = false
+        cardStack.axis = .vertical
+        cardStack.alignment = .leading
+        cardStack.distribution = .equalSpacing
     }
 
     private func setUpEmojiLabel() {
@@ -175,6 +172,23 @@ final class TrackerCell: UICollectionViewCell {
                 equalToConstant: Layout.cardHeight
             ),
 
+            cardStack.topAnchor.constraint(
+                equalTo: cardView.topAnchor,
+                constant: Layout.padding
+            ),
+            cardStack.leadingAnchor.constraint(
+                equalTo: cardView.leadingAnchor,
+                constant: Layout.padding
+            ),
+            cardStack.trailingAnchor.constraint(
+                equalTo: cardView.trailingAnchor,
+                constant: -Layout.padding
+            ),
+            cardStack.bottomAnchor.constraint(
+                equalTo: cardView.bottomAnchor,
+                constant: -Layout.padding
+            ),
+
             emojiLabel.widthAnchor.constraint(
                 equalToConstant: Layout.emojiSize
             ),
@@ -182,9 +196,7 @@ final class TrackerCell: UICollectionViewCell {
                 equalToConstant: Layout.emojiSize
             ),
 
-            titleLabel.widthAnchor.constraint(
-                equalTo: cardView.layoutMarginsGuide.widthAnchor
-            ),
+            titleLabel.widthAnchor.constraint(equalTo: cardStack.widthAnchor),
 
             pinImageView.topAnchor.constraint(
                 equalTo: cardView.topAnchor,

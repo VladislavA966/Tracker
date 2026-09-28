@@ -44,10 +44,12 @@ final class TrackersViewModel {
 
     init(
         trackerStore: TrackerStore = TrackerStore(),
-        recordStore: TrackerRecordStore = TrackerRecordStore()
+        recordStore: TrackerRecordStore = TrackerRecordStore(),
+        currentDate: Date = Date()
     ) {
         self.trackerStore = trackerStore
         self.recordStore = recordStore
+        self.currentDate = currentDate
         trackerStore.delegate = self
         recordStore.delegate = self
     }

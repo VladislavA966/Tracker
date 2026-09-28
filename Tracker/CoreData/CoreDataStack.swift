@@ -21,11 +21,17 @@ final class CoreDataStack {
     }
 
     func saveContext() throws {
-        guard viewContext.hasChanges else { return }
+        try viewContext.saveIfNeeded()
+    }
+}
+
+extension NSManagedObjectContext {
+    func saveIfNeeded() throws {
+        guard hasChanges else { return }
         do {
-            try viewContext.save()
+            try save()
         } catch {
-            viewContext.rollback()
+            rollback()
             throw error
         }
     }

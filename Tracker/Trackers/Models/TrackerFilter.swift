@@ -15,7 +15,6 @@ enum TrackerFilter: CaseIterable {
         }
     }
 
-    /// «Все» и «На сегодня» — это сброс, а не фильтр: галочку не ставим, кнопку не красим.
     var isActive: Bool {
         switch self {
         case .all, .today: false
